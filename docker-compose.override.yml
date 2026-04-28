@@ -1,0 +1,18 @@
+# Development overrides — hot-reload + exposed ports for local tooling
+services:
+  api:
+    build:
+      target: builder
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend:/app
+    environment:
+      ENVIRONMENT: development
+
+  postgres:
+    ports:
+      - "5432:5432"   # expose for DBeaver / pgAdmin
+
+  redis:
+    ports:
+      - "6379:6379"

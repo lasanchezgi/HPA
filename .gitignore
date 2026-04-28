@@ -1,0 +1,95 @@
+# --- Python / Backend ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+dist/
+*.egg-info/
+.eggs/
+
+# --- OS / Editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# --- Logs ---
+*.log
+
+# --- Environment / secrets ---
+.env
+.env.*
+*.keystore
+*.jks
+android/key.properties
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
+
+# --- Dart / Flutter ---
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+coverage/
+*.lock
+
+# Keep lockfiles in apps if desired:
+#! pubspec.lock
+
+# Generated plugin registrants
+.flutter-plugins
+.flutter-plugins-dependencies
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Flutter local config
+.metadata
+
+# --- Android ---
+android/.gradle/
+android/app/debug/
+android/app/profile/
+android/app/release/
+android/local.properties
+android/captures/
+**/android/**/GeneratedPluginRegistrant.java
+
+# --- iOS / macOS (Flutter) ---
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/.symlinks/
+ios/Pods/
+ios/Runner.xcworkspace/
+ios/DerivedData/
+**/*.xcuserstate
+**/*.xcworkspace/xcuserdata/
+**/*.xcodeproj/xcuserdata/
+
+macos/Flutter/ephemeral/
+macos/Pods/
+macos/Runner.xcworkspace/
+macos/DerivedData/
+
+# --- Linux / Windows (Flutter desktop) ---
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/
+
+# --- Web ---
+lib/generated_plugin_registrant.dart
+web/.dart_tool/
+
+# --- Firebase / Crashlytics symbols ---
+app.*.symbols
+*.symbols
+*.dSYM
+*.dSYM.zip
