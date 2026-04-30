@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 from src.application.dtos.habit_dtos import LogCompletionDTO, LogCompletionResultDTO
 from src.domain.entities.habit_log import CompletionStatus, HabitLog
 from src.domain.entities.streak import Streak
-from src.domain.exceptions import HabitNotFoundError
+from src.domain.exceptions import DuplicateLogError, HabitNotFoundError
 from src.domain.repositories.habit_log_repository import HabitLogRepository
 from src.domain.repositories.habit_repository import HabitRepository
 
@@ -24,6 +24,10 @@ class LogCompletionUseCase:
             raise HabitNotFoundError(str(dto.habit_id))
 
         now = datetime.now(timezone.utc)
+        existing = await self._logs.find_by_habit_and_date(dto.habit_id, now.date())
+        if existing is not None:
+            raise DuplicateLogError(str(dto.habit_id))
+
         log = HabitLog(
             id=uuid4(),
             habit_id=dto.habit_id,
@@ -45,9 +49,12 @@ class LogCompletionUseCase:
             status=dto.status,
             current_streak=streak.current_streak,
             best_streak=streak.best_streak,
+            logged_at=saved_log.logged_at,
         )
 
     async def _build_streak(self, habit_id: UUID) -> Streak:
+        from datetime import timedelta
+
         logs = await self._logs.find_by_habit_id(habit_id)
         done_dates = sorted(
             {l.logged_at.date() for l in logs if l.status == CompletionStatus.DONE}
@@ -56,8 +63,6 @@ class LogCompletionUseCase:
         current = 0
         best = 0
         last_date = None
-
-        from datetime import timedelta
 
         for d in done_dates:
             if last_date is None or d == last_date + timedelta(days=1):

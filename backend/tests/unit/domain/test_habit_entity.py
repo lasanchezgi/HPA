@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from backend.src.domain.entities.habit import Habit
+from src.domain.entities.habit import Habit
 
 
 @pytest.fixture

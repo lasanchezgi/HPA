@@ -4,9 +4,9 @@ from uuid import uuid4
 
 import pytest
 
-from backend.src.application.dtos.habit_dtos import CreateHabitDTO
-from backend.src.domain.entities.user import User
-from backend.src.domain.repositories.habit_repository import HabitRepository
+from src.application.dtos.habit_dtos import CreateHabitDTO
+from src.domain.entities.user import User
+from src.domain.repositories.habit_repository import HabitRepository
 
 
 @pytest.fixture

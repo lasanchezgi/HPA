@@ -4,10 +4,10 @@ from uuid import uuid4
 
 import pytest
 
-from backend.src.application.dtos.habit_dtos import CreateHabitDTO, HabitDTO
-from backend.src.application.use_cases.habits.create_habit import CreateHabitUseCase
-from backend.src.domain.entities.habit import Habit
-from backend.src.domain.exceptions import DuplicateHabitError
+from src.application.dtos.habit_dtos import CreateHabitDTO, HabitDTO
+from src.application.use_cases.habits.create_habit import CreateHabitUseCase
+from src.domain.entities.habit import Habit
+from src.domain.exceptions import DuplicateHabitError
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def create_habit_dto():
 
 
 @pytest.mark.asyncio
-async def test_create_habit_saves_and_returns_dto(mock_habit_repository, create_habit_dto):
+async def test_creates_habit_and_calls_repository_save(mock_habit_repository, create_habit_dto):
     now = datetime.now(timezone.utc)
     saved_habit = Habit(
         id=uuid4(),
@@ -47,7 +47,7 @@ async def test_create_habit_saves_and_returns_dto(mock_habit_repository, create_
 
 
 @pytest.mark.asyncio
-async def test_create_habit_raises_if_duplicate_name(mock_habit_repository, create_habit_dto):
+async def test_raises_duplicate_error_if_name_exists(mock_habit_repository, create_habit_dto):
     existing = Habit(
         id=uuid4(),
         user_id=create_habit_dto.user_id,

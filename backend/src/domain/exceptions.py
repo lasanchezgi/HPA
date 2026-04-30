@@ -39,6 +39,12 @@ class DuplicateHabitError(DomainException):
         self.habit_name = habit_name
 
 
+class DuplicateLogError(DomainException):
+    def __init__(self, habit_id: str) -> None:
+        super().__init__(f"Habit '{habit_id}' already logged today.")
+        self.habit_id = habit_id
+
+
 class StreakCalculationError(DomainException):
     def __init__(self, reason: str) -> None:
         super().__init__(f"Streak calculation failed: {reason}")

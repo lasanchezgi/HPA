@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
@@ -50,3 +50,4 @@ class LogCompletionResultDTO:
     status: CompletionStatus
     current_streak: int
     best_streak: int
+    logged_at: datetime

@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.application.dtos.habit_dtos import CreateHabitDTO, LogCompletionDTO
 from src.application.use_cases.habits.create_habit import CreateHabitUseCase
@@ -9,6 +9,7 @@ from src.application.use_cases.habits.get_user_habits import GetUserHabitsUseCas
 from src.application.use_cases.habits.log_completion import LogCompletionUseCase
 from src.delivery.dependencies import (
     CurrentUser,
+    DbSession,
     get_create_habit_use_case,
     get_log_completion_use_case,
     get_user_habits_use_case,
@@ -19,6 +20,9 @@ from src.delivery.schemas.habit_schemas import (
     LogCompletionRequest,
     LogCompletionResponse,
 )
+from src.infrastructure.database.repositories.postgres_catalogue_repository import (
+    PostgresCatalogueRepository,
+)
 
 router = APIRouter(prefix="/habits", tags=["habits"])
 
@@ -27,14 +31,31 @@ router = APIRouter(prefix="/habits", tags=["habits"])
 async def create_habit(
     body: CreateHabitRequest,
     current_user: CurrentUser,
+    db: DbSession,
     use_case: Annotated[CreateHabitUseCase, Depends(get_create_habit_use_case)],
 ) -> HabitResponse:
+    catalogue_repo = PostgresCatalogueRepository(db)
+
+    frequency_id = await catalogue_repo.find_id_by_type_and_code("frequency", body.frequency_code)
+    if not frequency_id:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Unknown frequency_code: '{body.frequency_code}'",
+        )
+
+    category_id = await catalogue_repo.find_id_by_type_and_code("category", body.category_code)
+    if not category_id:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Unknown category_code: '{body.category_code}'",
+        )
+
     dto = CreateHabitDTO(
         user_id=current_user.id,
         habit_name=body.habit_name,
         habit_description=body.habit_description,
-        frequency_id=body.frequency_id,
-        category_id=body.category_id,
+        frequency_id=frequency_id,
+        category_id=category_id,
         habit_type_id=body.habit_type_id,
         goal_target=body.goal_target,
         habit_start_date=body.habit_start_date,
@@ -60,9 +81,6 @@ async def get_habit(
     current_user: CurrentUser,
     use_case: Annotated[GetUserHabitsUseCase, Depends(get_user_habits_use_case)],
 ) -> HabitResponse:
-    from src.domain.exceptions import HabitNotFoundError
-    from fastapi import HTTPException
-
     habits = await use_case.execute(current_user.id)
     habit = next((h for h in habits if h.id == habit_id), None)
     if not habit:
@@ -70,7 +88,11 @@ async def get_habit(
     return HabitResponse(**habit.__dict__)
 
 
-@router.post("/{habit_id}/log", response_model=LogCompletionResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{habit_id}/logs",
+    response_model=LogCompletionResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def log_habit_completion(
     habit_id: UUID,
     body: LogCompletionRequest,
@@ -91,4 +113,5 @@ async def log_habit_completion(
         status=result.status,
         current_streak=result.current_streak,
         best_streak=result.best_streak,
+        logged_at=result.logged_at,
     )

@@ -11,14 +11,14 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from backend.src.domain.entities.habit import Habit
-from backend.src.infrastructure.database.models.base import Base
-from backend.src.infrastructure.database.models import (  # noqa: F401 — ensure metadata populated
+from src.domain.entities.habit import Habit
+from src.infrastructure.database.models.base import Base
+from src.infrastructure.database.models import (  # noqa: F401 — ensure metadata populated
     habit_log_model,
     habit_model,
     user_model,
 )
-from backend.src.infrastructure.database.repositories.postgres_habit_repository import (
+from src.infrastructure.database.repositories.postgres_habit_repository import (
     PostgresHabitRepository,
 )
 
@@ -53,7 +53,7 @@ async def session(engine):
 
 
 @pytest.mark.asyncio
-async def test_save_and_find_habit(session):
+async def test_save_and_find_by_id(session):
     repo = PostgresHabitRepository(session)
     habit = Habit(
         id=uuid4(),
@@ -71,3 +71,38 @@ async def test_save_and_find_habit(session):
     assert found is not None
     assert found.habit_name == "Integration Test Habit"
     assert found.is_active is True
+
+
+@pytest.mark.asyncio
+async def test_find_all_by_user_id_returns_only_user_habits(session):
+    repo = PostgresHabitRepository(session)
+    user_a = uuid4()
+    user_b = uuid4()
+
+    habit_a = Habit(
+        id=uuid4(),
+        user_id=user_a,
+        habit_name="User A Habit",
+        frequency_id=uuid4(),
+        category_id=uuid4(),
+        habit_start_date=datetime.now(timezone.utc),
+        is_active=True,
+        created_at=datetime.now(timezone.utc),
+    )
+    habit_b = Habit(
+        id=uuid4(),
+        user_id=user_b,
+        habit_name="User B Habit",
+        frequency_id=uuid4(),
+        category_id=uuid4(),
+        habit_start_date=datetime.now(timezone.utc),
+        is_active=True,
+        created_at=datetime.now(timezone.utc),
+    )
+    await repo.save(habit_a)
+    await repo.save(habit_b)
+
+    results = await repo.find_all_by_user_id(user_a)
+    assert all(h.user_id == user_a for h in results)
+    assert any(h.habit_name == "User A Habit" for h in results)
+    assert not any(h.habit_name == "User B Habit" for h in results)

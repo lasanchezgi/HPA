@@ -1,14 +1,16 @@
-from datetime import date, timezone, datetime
+from datetime import date, datetime, timedelta, timezone
 from uuid import UUID
 
-from src.application.dtos.dashboard_dtos import DashboardSummaryDTO, HabitSummaryDTO
+from src.application.dtos.dashboard_dtos import (
+    ConsistencyScoreData,
+    DashboardSummaryDTO,
+    HabitSummaryDTO,
+)
 from src.domain.entities.habit_log import CompletionStatus
 from src.domain.entities.streak import Streak
 from src.domain.repositories.habit_log_repository import HabitLogRepository
 from src.domain.repositories.habit_repository import HabitRepository
 from src.domain.value_objects.consistency_score import ConsistencyScore
-
-from datetime import timedelta
 
 
 class GetDashboardSummaryUseCase:
@@ -49,13 +51,17 @@ class GetDashboardSummaryUseCase:
             total_completed += len(done_dates)
             total_days_sum += days_since_start
 
+            done_logs = [l for l in logs if l.status == CompletionStatus.DONE]
+            last_logged: datetime | None = (
+                max(done_logs, key=lambda l: l.logged_at).logged_at if done_logs else None
+            )
+
             habits_summary.append(
                 HabitSummaryDTO(
                     habit_id=habit.id,
                     habit_name=habit.habit_name,
                     current_streak=streak.current_streak,
-                    consistency_score=score_obj.value,
-                    consistency_label=score_obj.label(),
+                    last_logged=last_logged,
                 )
             )
 
@@ -68,8 +74,10 @@ class GetDashboardSummaryUseCase:
             total_habits=len(habits),
             active_streaks=active_streaks,
             best_streak_overall=best_streak_overall,
-            consistency_score=overall_score.value,
-            consistency_label=overall_score.label(),
+            consistency_score=ConsistencyScoreData(
+                value=overall_score.value,
+                label=overall_score.label(),
+            ),
             total_gems=0,
             habits_summary=habits_summary,
         )
