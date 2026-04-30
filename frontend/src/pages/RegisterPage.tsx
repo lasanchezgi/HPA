@@ -19,7 +19,9 @@ export default function RegisterPage() {
   const validate = () => {
     const newErrors: Record<string, string> = {}
     if (!email) newErrors.email = 'El email es requerido'
+    if (!username || username.length < 3) newErrors.username = 'Mínimo 3 caracteres'
     if (!password) newErrors.password = 'La contraseña es requerida'
+    if (password.length < 8) newErrors.password = 'Mínimo 8 caracteres'
     if (password !== repeatPassword) newErrors.repeatPassword = 'Las contraseñas no coinciden'
     return newErrors
   }
@@ -34,7 +36,7 @@ export default function RegisterPage() {
     setErrors({})
     setLoading(true)
     try {
-      await register(email, password)
+      await register(email, password, username)
       navigate('/login', { state: { message: '¡Cuenta creada! Inicia sesión para continuar.' } })
     } catch (err) {
       setErrors({ submit: err instanceof Error ? err.message : 'Error al registrarse' })
@@ -74,7 +76,8 @@ export default function RegisterPage() {
           label="Username"
           value={username}
           onChange={setUsername}
-          placeholder="@username"
+          error={errors.username}
+          placeholder="mínimo 3 caracteres"
         />
         <Input
           label="Password"

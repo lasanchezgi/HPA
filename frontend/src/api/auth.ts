@@ -2,9 +2,9 @@ import axios from 'axios'
 import client from './client'
 import type { User, AuthTokens } from '../types'
 
-export async function register(email: string, password: string): Promise<User> {
+export async function register(email: string, password: string, username: string): Promise<User> {
   try {
-    const { data } = await client.post<User>('/auth/register', { email, password })
+    const { data } = await client.post<User>('/auth/register', { email, password, username })
     return data
   } catch (error) {
     if (axios.isAxiosError(error)) {
