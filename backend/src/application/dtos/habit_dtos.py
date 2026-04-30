@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from src.domain.entities.habit_log import CompletionStatus
+from src.domain.entities.habit_log import CompletionStatus, HabitLog
 
 
 @dataclass
@@ -51,3 +51,22 @@ class LogCompletionResultDTO:
     current_streak: int
     best_streak: int
     logged_at: datetime
+
+
+@dataclass
+class HabitLogDTO:
+    id: UUID
+    habit_id: UUID
+    status: CompletionStatus
+    logged_at: datetime
+    notes: str | None = None
+
+    @classmethod
+    def from_entity(cls, log: HabitLog) -> "HabitLogDTO":
+        return cls(
+            id=log.id,
+            habit_id=log.habit_id,
+            status=log.status,
+            logged_at=log.logged_at,
+            notes=log.notes,
+        )

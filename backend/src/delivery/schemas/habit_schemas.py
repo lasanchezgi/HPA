@@ -34,6 +34,23 @@ class HabitResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class HabitDetailResponse(HabitResponse):
+    frequency_code: str
+    category_code: str
+    current_streak: int
+    best_streak: int
+
+
+class HabitLogSchema(BaseModel):
+    id: UUID
+    habit_id: UUID
+    status: CompletionStatus
+    logged_at: datetime
+    notes: str | None
+
+    model_config = {"from_attributes": True}
+
+
 class LogCompletionRequest(BaseModel):
     status: CompletionStatus
     notes: str | None = None

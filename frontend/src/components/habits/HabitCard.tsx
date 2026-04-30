@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { HabitSummary, LogCompletionResponse } from '../../types'
 import LoadingSpinner from '../ui/LoadingSpinner'
 
@@ -28,6 +29,7 @@ function formatLastLogged(date: string | null): string {
 type CheckinState = 'idle' | 'loading' | 'done' | 'error'
 
 export default function HabitCard({ habit, onCheckin, isCheckedInToday }: HabitCardProps) {
+  const navigate = useNavigate()
   const [state, setState] = useState<CheckinState>(isCheckedInToday ? 'done' : 'idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [newStreak, setNewStreak] = useState<number | null>(null)
@@ -57,7 +59,10 @@ export default function HabitCard({ habit, onCheckin, isCheckedInToday }: HabitC
   return (
     <div className="bg-white rounded-2xl px-4 py-3 shadow-sm">
       <div className="flex items-center justify-between gap-3">
-        <div className="flex-1 min-w-0">
+        <div
+          className="flex-1 min-w-0 cursor-pointer"
+          onClick={() => navigate(`/habits/${habit.habit_id}`)}
+        >
           <p className="text-sm font-semibold text-gray-900 truncate">{habit.habit_name}</p>
           <div className="flex items-center gap-2 mt-0.5">
             <p className="text-xs text-gray-400">{formatLastLogged(habit.last_logged)}</p>
@@ -73,7 +78,7 @@ export default function HabitCard({ habit, onCheckin, isCheckedInToday }: HabitC
         </div>
 
         <button
-          onClick={handleCheckin}
+          onClick={(e) => { e.stopPropagation(); handleCheckin() }}
           disabled={state === 'done' || state === 'loading'}
           className={`
             w-10 h-10 rounded-full flex items-center justify-center shrink-0

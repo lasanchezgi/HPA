@@ -4,24 +4,34 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.application.dtos.habit_dtos import CreateHabitDTO, LogCompletionDTO
+from src.application.use_cases.habits.archive_habit import ArchiveHabitUseCase
 from src.application.use_cases.habits.create_habit import CreateHabitUseCase
+from src.application.use_cases.habits.get_habit_logs import GetHabitLogsUseCase
 from src.application.use_cases.habits.get_user_habits import GetUserHabitsUseCase
 from src.application.use_cases.habits.log_completion import LogCompletionUseCase
 from src.delivery.dependencies import (
     CurrentUser,
     DbSession,
+    get_archive_habit_use_case,
     get_create_habit_use_case,
+    get_habit_logs_use_case,
     get_log_completion_use_case,
     get_user_habits_use_case,
 )
 from src.delivery.schemas.habit_schemas import (
     CreateHabitRequest,
+    HabitDetailResponse,
+    HabitLogSchema,
     HabitResponse,
     LogCompletionRequest,
     LogCompletionResponse,
 )
+from src.domain.exceptions import HabitNotFoundError
 from src.infrastructure.database.repositories.postgres_catalogue_repository import (
     PostgresCatalogueRepository,
+)
+from src.infrastructure.database.repositories.postgres_streak_repository import (
+    PostgresStreakRepository,
 )
 
 router = APIRouter(prefix="/habits", tags=["habits"])
@@ -75,17 +85,66 @@ async def list_habits(
     return [HabitResponse(**h.__dict__) for h in habits]
 
 
-@router.get("/{habit_id}", response_model=HabitResponse)
+@router.get("/{habit_id}", response_model=HabitDetailResponse)
 async def get_habit(
     habit_id: UUID,
     current_user: CurrentUser,
+    db: DbSession,
     use_case: Annotated[GetUserHabitsUseCase, Depends(get_user_habits_use_case)],
-) -> HabitResponse:
+) -> HabitDetailResponse:
     habits = await use_case.execute(current_user.id)
     habit = next((h for h in habits if h.id == habit_id), None)
     if not habit:
         raise HTTPException(status_code=404, detail=f"Habit '{habit_id}' not found.")
-    return HabitResponse(**habit.__dict__)
+
+    catalogue_repo = PostgresCatalogueRepository(db)
+    streak_repo = PostgresStreakRepository(db)
+
+    frequency_code = await catalogue_repo.find_code_by_id(habit.frequency_id) or ""
+    category_code = await catalogue_repo.find_code_by_id(habit.category_id) or ""
+    streak = await streak_repo.find_by_habit_id(habit_id)
+
+    return HabitDetailResponse(
+        **habit.__dict__,
+        frequency_code=frequency_code,
+        category_code=category_code,
+        current_streak=streak.current_streak if streak else 0,
+        best_streak=streak.best_streak if streak else 0,
+    )
+
+
+@router.get("/{habit_id}/logs", response_model=list[HabitLogSchema])
+async def get_habit_logs(
+    habit_id: UUID,
+    current_user: CurrentUser,
+    use_case: Annotated[GetHabitLogsUseCase, Depends(get_habit_logs_use_case)],
+) -> list[HabitLogSchema]:
+    try:
+        logs = await use_case.execute(habit_id, current_user.id)
+    except HabitNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Habit '{habit_id}' not found.")
+    return [
+        HabitLogSchema(
+            id=log.id,
+            habit_id=log.habit_id,
+            status=log.status,
+            logged_at=log.logged_at,
+            notes=log.notes,
+        )
+        for log in logs
+    ]
+
+
+@router.patch("/{habit_id}/archive", status_code=status.HTTP_204_NO_CONTENT)
+async def archive_habit(
+    habit_id: UUID,
+    current_user: CurrentUser,
+    use_case: Annotated[ArchiveHabitUseCase, Depends(get_archive_habit_use_case)],
+) -> None:
+    try:
+        await use_case.execute(habit_id, current_user.id)
+    except HabitNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Habit '{habit_id}' not found.")
 
 
 @router.post(

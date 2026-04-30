@@ -7,6 +7,8 @@ import type {
   CreatedHabit,
   LogCompletionPayload,
   LogCompletionResponse,
+  HabitDetail,
+  HabitLog,
 } from '../types'
 
 export async function getHabits(): Promise<Habit[]> {
@@ -44,6 +46,41 @@ export const createHabit = async (
       throw new Error(
         error.response?.data?.detail ?? 'Error creando el hábito'
       )
+    }
+    throw error
+  }
+}
+
+export const getHabitDetail = async (habitId: string): Promise<HabitDetail> => {
+  try {
+    const { data } = await client.get(`/habits/${habitId}`)
+    return data
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data?.detail ?? 'Hábito no encontrado')
+    }
+    throw error
+  }
+}
+
+export const getHabitLogs = async (habitId: string): Promise<HabitLog[]> => {
+  try {
+    const { data } = await client.get(`/habits/${habitId}/logs`)
+    return data
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data?.detail ?? 'Error cargando historial')
+    }
+    throw error
+  }
+}
+
+export const archiveHabit = async (habitId: string): Promise<void> => {
+  try {
+    await client.patch(`/habits/${habitId}/archive`)
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data?.detail ?? 'Error archivando el hábito')
     }
     throw error
   }

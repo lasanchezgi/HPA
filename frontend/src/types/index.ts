@@ -77,3 +77,34 @@ export interface CreatedHabit {
   habit_start_date: string
   created_at: string
 }
+
+export interface HabitLog {
+  id: string
+  habit_id: string
+  status: 'done' | 'partial' | 'not_done'
+  notes: string | null
+  logged_at: string  // ISO datetime
+}
+
+export interface HabitDetail {
+  id: string
+  user_id: string
+  habit_name: string
+  habit_description: string | null
+  frequency_id: string
+  category_id: string
+  frequency_code: string
+  category_code: string
+  is_active: boolean
+  habit_start_date: string
+  created_at: string
+  current_streak: number
+  best_streak: number
+}
+
+export interface ConsistencyDataPoint {
+  week: string
+  completed: number
+  total: number
+  rate: number
+}

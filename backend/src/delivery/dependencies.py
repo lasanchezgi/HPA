@@ -12,7 +12,9 @@ from src.application.use_cases.auth.register_user import RegisterUserUseCase
 from src.application.use_cases.dashboard.get_dashboard_summary import (
     GetDashboardSummaryUseCase,
 )
+from src.application.use_cases.habits.archive_habit import ArchiveHabitUseCase
 from src.application.use_cases.habits.create_habit import CreateHabitUseCase
+from src.application.use_cases.habits.get_habit_logs import GetHabitLogsUseCase
 from src.application.use_cases.habits.get_user_habits import GetUserHabitsUseCase
 from src.application.use_cases.habits.log_completion import LogCompletionUseCase
 from src.domain.exceptions import InvalidCredentialsError
@@ -100,6 +102,17 @@ def get_log_completion_use_case(db: DbSession) -> LogCompletionUseCase:
         PostgresHabitLogRepository(db),
         PostgresStreakRepository(db),
     )
+
+
+def get_habit_logs_use_case(db: DbSession) -> GetHabitLogsUseCase:
+    return GetHabitLogsUseCase(
+        PostgresHabitRepository(db),
+        PostgresHabitLogRepository(db),
+    )
+
+
+def get_archive_habit_use_case(db: DbSession) -> ArchiveHabitUseCase:
+    return ArchiveHabitUseCase(PostgresHabitRepository(db))
 
 
 def get_dashboard_use_case(db: DbSession) -> GetDashboardSummaryUseCase:

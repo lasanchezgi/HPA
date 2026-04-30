@@ -4,6 +4,7 @@ import ProtectedRoute from './components/layout/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
+import HabitDetailPage from './pages/HabitDetailPage'
 
 export default function App() {
   return (
@@ -17,6 +18,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/habits/:habitId"
+            element={
+              <ProtectedRoute>
+                <HabitDetailPage />
               </ProtectedRoute>
             }
           />
