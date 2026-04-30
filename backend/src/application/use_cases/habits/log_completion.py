@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from src.application.dtos.habit_dtos import LogCompletionDTO, LogCompletionResultDTO
 from src.domain.entities.habit_log import CompletionStatus, HabitLog
@@ -7,6 +7,7 @@ from src.domain.entities.streak import Streak
 from src.domain.exceptions import DuplicateLogError, HabitNotFoundError
 from src.domain.repositories.habit_log_repository import HabitLogRepository
 from src.domain.repositories.habit_repository import HabitRepository
+from src.domain.repositories.streak_repository import StreakRepository
 
 
 class LogCompletionUseCase:
@@ -14,9 +15,11 @@ class LogCompletionUseCase:
         self,
         habit_repository: HabitRepository,
         habit_log_repository: HabitLogRepository,
+        streak_repository: StreakRepository,
     ) -> None:
         self._habits = habit_repository
         self._logs = habit_log_repository
+        self._streaks = streak_repository
 
     async def execute(self, dto: LogCompletionDTO) -> LogCompletionResultDTO:
         habit = await self._habits.find_by_id(dto.habit_id)
@@ -39,42 +42,25 @@ class LogCompletionUseCase:
         )
         saved_log = await self._logs.save(log)
 
-        streak = await self._build_streak(dto.habit_id)
+        streak = await self._streaks.find_by_habit_id(dto.habit_id)
+        if streak is None:
+            streak = Streak(
+                habit_id=dto.habit_id,
+                current_streak=0,
+                best_streak=0,
+                last_completed_date=None,
+            )
+
         if dto.status == CompletionStatus.DONE:
             streak = streak.update_after_completion(now.date())
+
+        persisted = await self._streaks.save_or_update(streak)
 
         return LogCompletionResultDTO(
             log_id=saved_log.id,
             habit_id=dto.habit_id,
             status=dto.status,
-            current_streak=streak.current_streak,
-            best_streak=streak.best_streak,
+            current_streak=persisted.current_streak,
+            best_streak=persisted.best_streak,
             logged_at=saved_log.logged_at,
-        )
-
-    async def _build_streak(self, habit_id: UUID) -> Streak:
-        from datetime import timedelta
-
-        logs = await self._logs.find_by_habit_id(habit_id)
-        done_dates = sorted(
-            {l.logged_at.date() for l in logs if l.status == CompletionStatus.DONE}
-        )
-
-        current = 0
-        best = 0
-        last_date = None
-
-        for d in done_dates:
-            if last_date is None or d == last_date + timedelta(days=1):
-                current += 1
-            else:
-                current = 1
-            best = max(best, current)
-            last_date = d
-
-        return Streak(
-            habit_id=habit_id,
-            current_streak=current,
-            best_streak=best,
-            last_completed_date=last_date,
         )

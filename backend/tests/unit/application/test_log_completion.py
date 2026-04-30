@@ -8,9 +8,11 @@ from src.application.dtos.habit_dtos import LogCompletionDTO
 from src.application.use_cases.habits.log_completion import LogCompletionUseCase
 from src.domain.entities.habit import Habit
 from src.domain.entities.habit_log import CompletionStatus, HabitLog
+from src.domain.entities.streak import Streak
 from src.domain.exceptions import DuplicateLogError, HabitNotFoundError
 from src.domain.repositories.habit_log_repository import HabitLogRepository
 from src.domain.repositories.habit_repository import HabitRepository
+from src.domain.repositories.streak_repository import StreakRepository
 
 
 @pytest.fixture
@@ -32,14 +34,18 @@ def habit(user_id):
     )
 
 
+def _make_use_case(habit_repo, log_repo, streak_repo):
+    return LogCompletionUseCase(habit_repo, log_repo, streak_repo)
+
+
 @pytest.mark.asyncio
 async def test_log_completion_creates_log_and_updates_streak(habit, user_id):
     habit_repo = AsyncMock(spec=HabitRepository)
     log_repo = AsyncMock(spec=HabitLogRepository)
+    streak_repo = AsyncMock(spec=StreakRepository)
 
     habit_repo.find_by_id.return_value = habit
     log_repo.find_by_habit_and_date.return_value = None
-    log_repo.find_by_habit_id.return_value = []
 
     saved_log = HabitLog(
         id=uuid4(),
@@ -49,8 +55,14 @@ async def test_log_completion_creates_log_and_updates_streak(habit, user_id):
         logged_at=datetime.now(timezone.utc),
     )
     log_repo.save.return_value = saved_log
+    streak_repo.find_by_habit_id.return_value = None
 
-    use_case = LogCompletionUseCase(habit_repo, log_repo)
+    persisted_streak = Streak(
+        habit_id=habit.id, current_streak=1, best_streak=1, last_completed_date=None
+    )
+    streak_repo.save_or_update.return_value = persisted_streak
+
+    use_case = _make_use_case(habit_repo, log_repo, streak_repo)
     dto = LogCompletionDTO(habit_id=habit.id, user_id=user_id, status=CompletionStatus.DONE)
     result = await use_case.execute(dto)
 
@@ -59,12 +71,14 @@ async def test_log_completion_creates_log_and_updates_streak(habit, user_id):
     assert result.status == CompletionStatus.DONE
     assert result.logged_at is not None
     log_repo.save.assert_called_once()
+    streak_repo.save_or_update.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_duplicate_log_same_day_raises_error(habit, user_id):
     habit_repo = AsyncMock(spec=HabitRepository)
     log_repo = AsyncMock(spec=HabitLogRepository)
+    streak_repo = AsyncMock(spec=StreakRepository)
 
     habit_repo.find_by_id.return_value = habit
     existing_log = HabitLog(
@@ -76,22 +90,24 @@ async def test_duplicate_log_same_day_raises_error(habit, user_id):
     )
     log_repo.find_by_habit_and_date.return_value = existing_log
 
-    use_case = LogCompletionUseCase(habit_repo, log_repo)
+    use_case = _make_use_case(habit_repo, log_repo, streak_repo)
     dto = LogCompletionDTO(habit_id=habit.id, user_id=user_id, status=CompletionStatus.DONE)
 
     with pytest.raises(DuplicateLogError):
         await use_case.execute(dto)
 
     log_repo.save.assert_not_called()
+    streak_repo.save_or_update.assert_not_called()
 
 
 @pytest.mark.asyncio
 async def test_log_completion_raises_when_habit_not_found(user_id):
     habit_repo = AsyncMock(spec=HabitRepository)
     log_repo = AsyncMock(spec=HabitLogRepository)
+    streak_repo = AsyncMock(spec=StreakRepository)
     habit_repo.find_by_id.return_value = None
 
-    use_case = LogCompletionUseCase(habit_repo, log_repo)
+    use_case = _make_use_case(habit_repo, log_repo, streak_repo)
     dto = LogCompletionDTO(habit_id=uuid4(), user_id=user_id, status=CompletionStatus.DONE)
 
     with pytest.raises(HabitNotFoundError):

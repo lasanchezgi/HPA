@@ -22,6 +22,9 @@ from src.infrastructure.database.repositories.postgres_habit_log_repository impo
 from src.infrastructure.database.repositories.postgres_habit_repository import (
     PostgresHabitRepository,
 )
+from src.infrastructure.database.repositories.postgres_streak_repository import (
+    PostgresStreakRepository,
+)
 from src.infrastructure.database.repositories.postgres_user_repository import (
     PostgresUserRepository,
 )
@@ -92,8 +95,16 @@ def get_user_habits_use_case(db: DbSession) -> GetUserHabitsUseCase:
 
 
 def get_log_completion_use_case(db: DbSession) -> LogCompletionUseCase:
-    return LogCompletionUseCase(PostgresHabitRepository(db), PostgresHabitLogRepository(db))
+    return LogCompletionUseCase(
+        PostgresHabitRepository(db),
+        PostgresHabitLogRepository(db),
+        PostgresStreakRepository(db),
+    )
 
 
 def get_dashboard_use_case(db: DbSession) -> GetDashboardSummaryUseCase:
-    return GetDashboardSummaryUseCase(PostgresHabitRepository(db), PostgresHabitLogRepository(db))
+    return GetDashboardSummaryUseCase(
+        PostgresHabitRepository(db),
+        PostgresHabitLogRepository(db),
+        PostgresStreakRepository(db),
+    )

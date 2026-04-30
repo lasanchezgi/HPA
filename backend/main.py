@@ -23,6 +23,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         import src.infrastructure.database.models.user_model  # noqa: F401
         import src.infrastructure.database.models.habit_model  # noqa: F401
         import src.infrastructure.database.models.habit_log_model  # noqa: F401
+        import src.infrastructure.database.models.streak_model  # noqa: F401
         from src.infrastructure.database.models.catalogue_model import CatalogueModel  # noqa: F401
 
         async with engine.begin() as conn:

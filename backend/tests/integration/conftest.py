@@ -9,6 +9,7 @@ from src.infrastructure.database.models import (  # noqa: F401 — populate meta
     catalogue_model,
     habit_log_model,
     habit_model,
+    streak_model,
     user_model,
 )
 

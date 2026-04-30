@@ -81,19 +81,6 @@ def upgrade() -> None:
     op.create_index("ix_habit_logs_habit_id", "habit_logs", ["habit_id"])
 
     # ------------------------------------------------------------------
-    # streaks
-    # ------------------------------------------------------------------
-    op.create_table(
-        "streaks",
-        sa.Column("id", UUID(as_uuid=True), primary_key=True),
-        sa.Column("habit_id", UUID(as_uuid=True), sa.ForeignKey("habits.id", ondelete="CASCADE"), nullable=False, unique=True),
-        sa.Column("current_streak", sa.Integer, server_default="0", nullable=False),
-        sa.Column("best_streak", sa.Integer, server_default="0", nullable=False),
-        sa.Column("last_completed_date", sa.Date, nullable=True),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-    )
-
-    # ------------------------------------------------------------------
     # rewards
     # ------------------------------------------------------------------
     op.create_table(
@@ -143,7 +130,6 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_table("predictions")
     op.drop_table("rewards")
-    op.drop_table("streaks")
     op.drop_table("habit_logs")
     op.execute("DROP TYPE IF EXISTS completion_status")
     op.drop_table("habits")

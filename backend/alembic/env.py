@@ -13,6 +13,7 @@ from src.infrastructure.database.models.base import Base
 import src.infrastructure.database.models.user_model  # noqa: F401
 import src.infrastructure.database.models.habit_model  # noqa: F401
 import src.infrastructure.database.models.habit_log_model  # noqa: F401
+import src.infrastructure.database.models.streak_model  # noqa: F401
 
 config = context.config
 fileConfig(config.config_file_name)  # type: ignore[arg-type]

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -51,6 +51,25 @@ class PostgresHabitLogRepository(HabitLogRepository):
         )
         result = await self._session.execute(stmt)
         return result.scalar_one()
+
+    async def find_last_log_by_habit_ids(
+        self, habit_ids: list[UUID]
+    ) -> dict[UUID, datetime | None]:
+        if not habit_ids:
+            return {}
+        stmt = (
+            select(
+                HabitLogModel.habit_id,
+                func.max(HabitLogModel.logged_at).label("last_logged"),
+            )
+            .where(
+                HabitLogModel.habit_id.in_(habit_ids),
+                HabitLogModel.status == CompletionStatusEnum.DONE,
+            )
+            .group_by(HabitLogModel.habit_id)
+        )
+        result = await self._session.execute(stmt)
+        return {row.habit_id: row.last_logged for row in result}
 
 
 def _to_model(log: HabitLog) -> HabitLogModel:
