@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getDashboard } from '../api/habits'
 import type { DashboardSummary } from '../types'
 
@@ -6,6 +6,7 @@ export function useHabits() {
   const [data, setData] = useState<DashboardSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -25,7 +26,11 @@ export function useHabits() {
 
     fetch()
     return () => { cancelled = true }
+  }, [refreshKey])
+
+  const refresh = useCallback(() => {
+    setRefreshKey((k) => k + 1)
   }, [])
 
-  return { data, loading, error }
+  return { data, loading, error, refresh }
 }

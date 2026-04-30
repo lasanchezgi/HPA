@@ -1,13 +1,42 @@
+import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useHabits } from '../hooks/useHabits'
+import { logCompletion } from '../api/habits'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
+import StreakCelebration from '../components/ui/StreakCelebration'
 import BottomNav from '../components/layout/BottomNav'
+import CreateHabitModal from '../components/habits/CreateHabitModal'
+import HabitCard from '../components/habits/HabitCard'
+import type { HabitSummary, LogCompletionResponse } from '../types'
 
 export default function DashboardPage() {
   const { userEmail, logout } = useAuth()
-  const { data, loading, error } = useHabits()
+  const { data, loading, error, refresh } = useHabits()
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [celebration, setCelebration] = useState<{ visible: boolean; streak: number }>({
+    visible: false,
+    streak: 0,
+  })
 
   const displayName = userEmail?.split('@')[0] ?? 'there'
+
+  const isCheckedInToday = (habit: HabitSummary): boolean => {
+    if (!habit.last_logged) return false
+    const lastDate = new Date(habit.last_logged).toDateString()
+    const today = new Date().toDateString()
+    return lastDate === today
+  }
+
+  const handleCheckin = async (habitId: string): Promise<LogCompletionResponse> => {
+    const result = await logCompletion(habitId, { status: 'done' })
+
+    if (result.current_streak >= 3) {
+      setCelebration({ visible: true, streak: result.current_streak })
+    }
+
+    refresh()
+    return result
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -85,30 +114,22 @@ export default function DashboardPage() {
               <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
                 <p className="text-4xl mb-3">🌱</p>
                 <p className="text-gray-500 text-sm mb-4">No habits yet</p>
-                <button className="text-blue-500 text-sm font-medium">
+                <button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="text-blue-500 text-sm font-medium"
+                >
                   + Create your first habit
                 </button>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
                 {data.habits_summary.map((habit) => (
-                  <div
+                  <HabitCard
                     key={habit.habit_id}
-                    className="bg-white rounded-2xl px-4 py-3 shadow-sm flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{habit.habit_name}</p>
-                      <p className="text-xs text-gray-400">
-                        {habit.last_logged
-                          ? `Last: ${new Date(habit.last_logged).toLocaleDateString()}`
-                          : 'Not logged yet'}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 text-orange-500">
-                      <span className="text-sm font-bold">{habit.current_streak}</span>
-                      <span className="text-sm">🔥</span>
-                    </div>
-                  </div>
+                    habit={habit}
+                    onCheckin={handleCheckin}
+                    isCheckedInToday={isCheckedInToday(habit)}
+                  />
                 ))}
               </div>
             )}
@@ -116,7 +137,30 @@ export default function DashboardPage() {
         )}
       </div>
 
+      <button
+        onClick={() => setIsCreateModalOpen(true)}
+        className="fixed bottom-20 right-4 z-40 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl active:scale-95 transition-transform"
+        aria-label="Create habit"
+      >
+        +
+      </button>
+
       <BottomNav />
+
+      <CreateHabitModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onHabitCreated={() => {
+          refresh()
+          setIsCreateModalOpen(false)
+        }}
+      />
+
+      <StreakCelebration
+        streak={celebration.streak}
+        isVisible={celebration.visible}
+        onComplete={() => setCelebration({ visible: false, streak: 0 })}
+      />
     </div>
   )
 }
