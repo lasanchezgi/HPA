@@ -15,16 +15,37 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     if settings.ENVIRONMENT == "development":
+        from sqlalchemy import func, select
+        from sqlalchemy.ext.asyncio import AsyncSession
+
         from src.infrastructure.database.session import engine
         from src.infrastructure.database.models.base import Base
-        # Import all models so metadata is populated
         import src.infrastructure.database.models.user_model  # noqa: F401
         import src.infrastructure.database.models.habit_model  # noqa: F401
         import src.infrastructure.database.models.habit_log_model  # noqa: F401
-        import src.infrastructure.database.models.catalogue_model  # noqa: F401
+        from src.infrastructure.database.models.catalogue_model import CatalogueModel  # noqa: F401
 
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+
+        async with AsyncSession(engine) as session:
+            count = await session.scalar(select(func.count()).select_from(CatalogueModel))
+            if count == 0:
+                seed_data = [
+                    CatalogueModel(catalogue_type="category", name="health", description="Salud"),
+                    CatalogueModel(catalogue_type="category", name="productivity", description="Productividad"),
+                    CatalogueModel(catalogue_type="category", name="learning", description="Aprendizaje"),
+                    CatalogueModel(catalogue_type="frequency", name="daily", description="Todos los días"),
+                    CatalogueModel(catalogue_type="frequency", name="weekly", description="Una vez por semana"),
+                    CatalogueModel(catalogue_type="frequency", name="monthly", description="Una vez por mes"),
+                    CatalogueModel(catalogue_type="habit_type", name="positive", description="Hábito para adquirir"),
+                    CatalogueModel(catalogue_type="habit_type", name="negative", description="Hábito para eliminar"),
+                ]
+                session.add_all(seed_data)
+                await session.commit()
+                print("✅ Catálogos sembrados correctamente")
+            else:
+                print(f"ℹ️  Catálogos ya existen ({count} registros), seed omitido")
     yield
 
 

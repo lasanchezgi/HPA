@@ -1,63 +1,39 @@
 """Integration tests for PostgresHabitRepository.
 
-These tests require a running PostgreSQL instance and use a real AsyncSession.
+These tests require a running PostgreSQL instance. See tests/integration/conftest.py.
 Run with: make test-integration or set TEST_DATABASE_URL in the environment.
 """
-import os
 from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
-import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from src.domain.entities.habit import Habit
-from src.infrastructure.database.models.base import Base
-from src.infrastructure.database.models import (  # noqa: F401 — ensure metadata populated
-    habit_log_model,
-    habit_model,
-    user_model,
-)
 from src.infrastructure.database.repositories.postgres_habit_repository import (
     PostgresHabitRepository,
 )
-
-TEST_DB_URL = os.getenv(
-    "TEST_DATABASE_URL",
-    "postgresql+asyncpg://habit_user:habit_pass@localhost:5432/habit_power_test",
-)
-
-pytestmark = pytest.mark.skipif(
-    not os.getenv("TEST_DATABASE_URL"),
-    reason="TEST_DATABASE_URL not set — skipping integration tests",
-)
+from src.infrastructure.database.models.user_model import UserModel
 
 
-@pytest_asyncio.fixture(scope="module")
-async def engine():
-    eng = create_async_engine(TEST_DB_URL, echo=False)
-    async with eng.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield eng
-    async with eng.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-    await eng.dispose()
-
-
-@pytest_asyncio.fixture
-async def session(engine):
-    factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-    async with factory() as s:
-        yield s
-        await s.rollback()
+async def _create_user(session) -> UserModel:
+    user = UserModel(
+        id=uuid4(),
+        username=f"user_{uuid4().hex[:8]}",
+        email=f"{uuid4().hex[:8]}@test.com",
+        hashed_password="hashed",
+    )
+    session.add(user)
+    await session.flush()
+    return user
 
 
 @pytest.mark.asyncio
-async def test_save_and_find_by_id(session):
-    repo = PostgresHabitRepository(session)
+async def test_save_and_find_by_id(test_session):
+    user = await _create_user(test_session)
+    repo = PostgresHabitRepository(test_session)
     habit = Habit(
         id=uuid4(),
-        user_id=uuid4(),
+        user_id=user.id,
         habit_name="Integration Test Habit",
         frequency_id=uuid4(),
         category_id=uuid4(),
@@ -74,14 +50,14 @@ async def test_save_and_find_by_id(session):
 
 
 @pytest.mark.asyncio
-async def test_find_all_by_user_id_returns_only_user_habits(session):
-    repo = PostgresHabitRepository(session)
-    user_a = uuid4()
-    user_b = uuid4()
+async def test_find_all_by_user_id_returns_only_user_habits(test_session):
+    user_a = await _create_user(test_session)
+    user_b = await _create_user(test_session)
+    repo = PostgresHabitRepository(test_session)
 
     habit_a = Habit(
         id=uuid4(),
-        user_id=user_a,
+        user_id=user_a.id,
         habit_name="User A Habit",
         frequency_id=uuid4(),
         category_id=uuid4(),
@@ -91,7 +67,7 @@ async def test_find_all_by_user_id_returns_only_user_habits(session):
     )
     habit_b = Habit(
         id=uuid4(),
-        user_id=user_b,
+        user_id=user_b.id,
         habit_name="User B Habit",
         frequency_id=uuid4(),
         category_id=uuid4(),
@@ -102,7 +78,7 @@ async def test_find_all_by_user_id_returns_only_user_habits(session):
     await repo.save(habit_a)
     await repo.save(habit_b)
 
-    results = await repo.find_all_by_user_id(user_a)
-    assert all(h.user_id == user_a for h in results)
+    results = await repo.find_all_by_user_id(user_a.id)
+    assert all(h.user_id == user_a.id for h in results)
     assert any(h.habit_name == "User A Habit" for h in results)
     assert not any(h.habit_name == "User B Habit" for h in results)
