@@ -1,3 +1,4 @@
+import asyncio
 from typing import Annotated
 from uuid import UUID
 
@@ -75,17 +76,35 @@ async def create_habit(
         habit_end_date=body.habit_end_date,
     )
     habit = await use_case.execute(dto)
-    return HabitResponse(**habit.__dict__)
+    return HabitResponse(
+        **habit.__dict__,
+        frequency_code=body.frequency_code,
+        category_code=body.category_code,
+    )
 
 
 @router.get("/", response_model=list[HabitResponse])
 async def list_habits(
     current_user: CurrentUser,
+    db: DbSession,
     use_case: Annotated[GetUserHabitsUseCase, Depends(get_user_habits_use_case)],
     active_only: bool = False,
 ) -> list[HabitResponse]:
     habits = await use_case.execute(current_user.id, active_only=active_only)
-    return [HabitResponse(**h.__dict__) for h in habits]
+    if not habits:
+        return []
+    catalogue_repo = PostgresCatalogueRepository(db)
+    unique_ids = list({h.frequency_id for h in habits} | {h.category_id for h in habits})
+    codes = await asyncio.gather(*[catalogue_repo.find_code_by_id(uid) for uid in unique_ids])
+    code_map: dict[UUID, str] = {uid: code or "" for uid, code in zip(unique_ids, codes)}
+    return [
+        HabitResponse(
+            **h.__dict__,
+            frequency_code=code_map.get(h.frequency_id, ""),
+            category_code=code_map.get(h.category_id, ""),
+        )
+        for h in habits
+    ]
 
 
 @router.get("/{habit_id}", response_model=HabitDetailResponse)
@@ -180,7 +199,15 @@ async def update_habit(
         habit = await use_case.execute(dto)
     except HabitNotFoundError:
         raise HTTPException(status_code=404, detail=f"Habit '{habit_id}' not found.")
-    return HabitResponse(**habit.__dict__)
+    freq_code, cat_code = await asyncio.gather(
+        catalogue_repo.find_code_by_id(habit.frequency_id),
+        catalogue_repo.find_code_by_id(habit.category_id),
+    )
+    return HabitResponse(
+        **habit.__dict__,
+        frequency_code=freq_code or "",
+        category_code=cat_code or "",
+    )
 
 
 @router.patch("/{habit_id}/archive", status_code=status.HTTP_204_NO_CONTENT)

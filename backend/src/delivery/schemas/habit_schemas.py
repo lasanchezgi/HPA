@@ -24,6 +24,8 @@ class HabitResponse(BaseModel):
     habit_description: str | None
     frequency_id: UUID
     category_id: UUID
+    frequency_code: str
+    category_code: str
     habit_type_id: UUID | None
     goal_target: float | None
     habit_start_date: datetime
@@ -35,8 +37,6 @@ class HabitResponse(BaseModel):
 
 
 class HabitDetailResponse(HabitResponse):
-    frequency_code: str
-    category_code: str
     current_streak: int
     best_streak: int
 
