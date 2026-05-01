@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     ENVIRONMENT: str = "development"
     REDIS_URL: str = "redis://redis:6379/0"
+    OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    COACH_MAX_TOKENS: int = 500
+    COACH_TEMPERATURE: float = 0.7
 
     model_config = SettingsConfigDict(
         env_file=".env",

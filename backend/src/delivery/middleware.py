@@ -1,5 +1,6 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
+from openai import APIError, AuthenticationError, RateLimitError
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.domain.exceptions import (
@@ -32,3 +33,18 @@ class ExceptionHandlerMiddleware(BaseHTTPMiddleware):
             return JSONResponse(status_code=409, content={"detail": str(exc)})
         except (DomainException, ApplicationException) as exc:
             return JSONResponse(status_code=422, content={"detail": str(exc)})
+        except RateLimitError:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Coach no disponible temporalmente. Intenta en unos segundos."},
+            )
+        except AuthenticationError:
+            return JSONResponse(
+                status_code=503,
+                content={"detail": "Coach no configurado correctamente."},
+            )
+        except APIError:
+            return JSONResponse(
+                status_code=502,
+                content={"detail": "Error comunicándose con el coach. Intenta de nuevo."},
+            )

@@ -5,12 +5,13 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config import get_settings
+from config import Settings, get_settings
 from src.application.dtos.auth_dtos import UserDTO
 from src.application.use_cases.auth.change_password import ChangePasswordUseCase
 from src.application.use_cases.auth.login_user import LoginUserUseCase
 from src.application.use_cases.auth.register_user import RegisterUserUseCase
 from src.application.use_cases.auth.update_profile import UpdateProfileUseCase
+from src.application.use_cases.coach.chat_with_coach import ChatWithCoachUseCase
 from src.application.use_cases.dashboard.get_dashboard_summary import (
     GetDashboardSummaryUseCase,
 )
@@ -21,6 +22,10 @@ from src.application.use_cases.habits.get_user_habits import GetUserHabitsUseCas
 from src.application.use_cases.habits.log_completion import LogCompletionUseCase
 from src.application.use_cases.habits.update_habit import UpdateHabitUseCase
 from src.domain.exceptions import InvalidCredentialsError
+from src.infrastructure.ai.openai_client import OpenAICoachClient
+from src.infrastructure.database.repositories.postgres_coach_repository import (
+    PostgresCoachRepository,
+)
 from src.infrastructure.database.repositories.postgres_habit_log_repository import (
     PostgresHabitLogRepository,
 )
@@ -135,4 +140,26 @@ def get_dashboard_use_case(db: DbSession) -> GetDashboardSummaryUseCase:
         PostgresHabitRepository(db),
         PostgresHabitLogRepository(db),
         PostgresStreakRepository(db),
+    )
+
+
+def get_coach_repository(db: DbSession) -> PostgresCoachRepository:
+    return PostgresCoachRepository(db)
+
+
+def get_coach_use_case(
+    db: DbSession,
+    app_settings: Annotated[Settings, Depends(get_settings)],
+) -> ChatWithCoachUseCase:
+    habit_repo = PostgresHabitRepository(db)
+    dashboard_use_case = GetDashboardSummaryUseCase(
+        habit_repo,
+        PostgresHabitLogRepository(db),
+        PostgresStreakRepository(db),
+    )
+    return ChatWithCoachUseCase(
+        coach_repo=PostgresCoachRepository(db),
+        habit_repo=habit_repo,
+        dashboard_use_case=dashboard_use_case,
+        openai_client=OpenAICoachClient(app_settings),
     )
