@@ -17,6 +17,7 @@ from src.application.use_cases.habits.create_habit import CreateHabitUseCase
 from src.application.use_cases.habits.get_habit_logs import GetHabitLogsUseCase
 from src.application.use_cases.habits.get_user_habits import GetUserHabitsUseCase
 from src.application.use_cases.habits.log_completion import LogCompletionUseCase
+from src.application.use_cases.habits.update_habit import UpdateHabitUseCase
 from src.domain.exceptions import InvalidCredentialsError
 from src.infrastructure.database.repositories.postgres_habit_log_repository import (
     PostgresHabitLogRepository,
@@ -109,6 +110,10 @@ def get_habit_logs_use_case(db: DbSession) -> GetHabitLogsUseCase:
         PostgresHabitRepository(db),
         PostgresHabitLogRepository(db),
     )
+
+
+def get_update_habit_use_case(db: DbSession) -> UpdateHabitUseCase:
+    return UpdateHabitUseCase(PostgresHabitRepository(db))
 
 
 def get_archive_habit_use_case(db: DbSession) -> ArchiveHabitUseCase:

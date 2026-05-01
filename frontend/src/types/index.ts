@@ -102,6 +102,14 @@ export interface HabitDetail {
   best_streak: number
 }
 
+export interface UpdateHabitPayload {
+  habit_name?: string
+  habit_description?: string
+  frequency_code?: string
+  category_code?: string
+  goal_target?: number
+}
+
 export interface ConsistencyDataPoint {
   week: string
   completed: number

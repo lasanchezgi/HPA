@@ -35,6 +35,18 @@ class HabitDTO:
 
 
 @dataclass
+class UpdateHabitDTO:
+    habit_id: UUID
+    user_id: UUID
+    habit_name: str | None = None
+    habit_description: str | None = None
+    frequency_id: UUID | None = None
+    category_id: UUID | None = None
+    goal_target: float | None = None
+    habit_end_date: datetime | None = None
+
+
+@dataclass
 class LogCompletionDTO:
     habit_id: UUID
     user_id: UUID

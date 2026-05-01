@@ -3,12 +3,13 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.application.dtos.habit_dtos import CreateHabitDTO, LogCompletionDTO
+from src.application.dtos.habit_dtos import CreateHabitDTO, LogCompletionDTO, UpdateHabitDTO
 from src.application.use_cases.habits.archive_habit import ArchiveHabitUseCase
 from src.application.use_cases.habits.create_habit import CreateHabitUseCase
 from src.application.use_cases.habits.get_habit_logs import GetHabitLogsUseCase
 from src.application.use_cases.habits.get_user_habits import GetUserHabitsUseCase
 from src.application.use_cases.habits.log_completion import LogCompletionUseCase
+from src.application.use_cases.habits.update_habit import UpdateHabitUseCase
 from src.delivery.dependencies import (
     CurrentUser,
     DbSession,
@@ -16,6 +17,7 @@ from src.delivery.dependencies import (
     get_create_habit_use_case,
     get_habit_logs_use_case,
     get_log_completion_use_case,
+    get_update_habit_use_case,
     get_user_habits_use_case,
 )
 from src.delivery.schemas.habit_schemas import (
@@ -25,6 +27,7 @@ from src.delivery.schemas.habit_schemas import (
     HabitResponse,
     LogCompletionRequest,
     LogCompletionResponse,
+    UpdateHabitRequest,
 )
 from src.domain.exceptions import HabitNotFoundError
 from src.infrastructure.database.repositories.postgres_catalogue_repository import (
@@ -133,6 +136,51 @@ async def get_habit_logs(
         )
         for log in logs
     ]
+
+
+@router.put("/{habit_id}", response_model=HabitResponse)
+async def update_habit(
+    habit_id: UUID,
+    body: UpdateHabitRequest,
+    current_user: CurrentUser,
+    db: DbSession,
+    use_case: Annotated[UpdateHabitUseCase, Depends(get_update_habit_use_case)],
+) -> HabitResponse:
+    catalogue_repo = PostgresCatalogueRepository(db)
+
+    frequency_id = None
+    if body.frequency_code is not None:
+        frequency_id = await catalogue_repo.find_id_by_type_and_code("frequency", body.frequency_code)
+        if not frequency_id:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Unknown frequency_code: '{body.frequency_code}'",
+            )
+
+    category_id = None
+    if body.category_code is not None:
+        category_id = await catalogue_repo.find_id_by_type_and_code("category", body.category_code)
+        if not category_id:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Unknown category_code: '{body.category_code}'",
+            )
+
+    dto = UpdateHabitDTO(
+        habit_id=habit_id,
+        user_id=current_user.id,
+        habit_name=body.habit_name,
+        habit_description=body.habit_description,
+        frequency_id=frequency_id,
+        category_id=category_id,
+        goal_target=body.goal_target,
+        habit_end_date=body.habit_end_date,
+    )
+    try:
+        habit = await use_case.execute(dto)
+    except HabitNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Habit '{habit_id}' not found.")
+    return HabitResponse(**habit.__dict__)
 
 
 @router.patch("/{habit_id}/archive", status_code=status.HTTP_204_NO_CONTENT)

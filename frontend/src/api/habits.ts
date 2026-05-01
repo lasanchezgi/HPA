@@ -9,6 +9,7 @@ import type {
   LogCompletionResponse,
   HabitDetail,
   HabitLog,
+  UpdateHabitPayload,
 } from '../types'
 
 export async function getHabits(): Promise<Habit[]> {
@@ -70,6 +71,21 @@ export const getHabitLogs = async (habitId: string): Promise<HabitLog[]> => {
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(error.response?.data?.detail ?? 'Error cargando historial')
+    }
+    throw error
+  }
+}
+
+export const updateHabit = async (
+  habitId: string,
+  payload: UpdateHabitPayload
+): Promise<HabitDetail> => {
+  try {
+    const { data } = await client.put(`/habits/${habitId}`, payload)
+    return data
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data?.detail ?? 'Error actualizando el hábito')
     }
     throw error
   }

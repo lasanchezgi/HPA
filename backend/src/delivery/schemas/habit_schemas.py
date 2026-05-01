@@ -41,6 +41,15 @@ class HabitDetailResponse(HabitResponse):
     best_streak: int
 
 
+class UpdateHabitRequest(BaseModel):
+    habit_name: str | None = Field(default=None, min_length=1, max_length=200)
+    habit_description: str | None = None
+    frequency_code: str | None = Field(default=None, min_length=1, max_length=50)
+    category_code: str | None = Field(default=None, min_length=1, max_length=50)
+    goal_target: float | None = None
+    habit_end_date: datetime | None = None
+
+
 class HabitLogSchema(BaseModel):
     id: UUID
     habit_id: UUID

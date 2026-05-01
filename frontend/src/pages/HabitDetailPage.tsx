@@ -4,6 +4,7 @@ import { useHabitDetail } from '../hooks/useHabitDetail'
 import { archiveHabit } from '../api/habits'
 import ConsistencyChart from '../components/habits/ConsistencyChart'
 import LogHistory from '../components/habits/LogHistory'
+import EditHabitModal from '../components/habits/EditHabitModal'
 
 const CATEGORY_EMOJI: Record<string, string> = {
   health: '🏃',
@@ -47,6 +48,7 @@ export default function HabitDetailPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [archiving, setArchiving] = useState(false)
   const [confirmArchive, setConfirmArchive] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
 
   const handleArchive = async () => {
     setArchiving(true)
@@ -93,7 +95,13 @@ export default function HabitDetailPage() {
             {menuOpen && (
               <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-lg border border-gray-100 z-10">
                 <button
-                  className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 rounded-xl"
+                  className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-t-xl"
+                  onClick={() => { setMenuOpen(false); setEditModalOpen(true) }}
+                >
+                  Editar hábito
+                </button>
+                <button
+                  className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 rounded-b-xl border-t border-gray-100"
                   onClick={() => { setMenuOpen(false); setConfirmArchive(true) }}
                 >
                   Archivar hábito
@@ -216,6 +224,18 @@ export default function HabitDetailPage() {
 
       {menuOpen && (
         <div className="fixed inset-0 z-0" onClick={() => setMenuOpen(false)} />
+      )}
+
+      {habit && (
+        <EditHabitModal
+          isOpen={editModalOpen}
+          habit={habit}
+          onClose={() => setEditModalOpen(false)}
+          onHabitUpdated={() => {
+            refresh()
+            setEditModalOpen(false)
+          }}
+        />
       )}
     </div>
   )
