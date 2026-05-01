@@ -27,3 +27,16 @@ class UserDTO:
 class TokenDTO:
     access_token: str
     token_type: str = "bearer"
+
+
+@dataclass
+class UpdateProfileDTO:
+    user_id: UUID
+    username: str
+
+
+@dataclass
+class ChangePasswordDTO:
+    user_id: UUID
+    current_password: str
+    new_password: str

@@ -1,7 +1,8 @@
 export interface User {
   id: string
+  username: string
   email: string
-  created_at: string
+  is_active: boolean
 }
 
 export interface AuthTokens {

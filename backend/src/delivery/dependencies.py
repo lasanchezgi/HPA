@@ -7,8 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import get_settings
 from src.application.dtos.auth_dtos import UserDTO
+from src.application.use_cases.auth.change_password import ChangePasswordUseCase
 from src.application.use_cases.auth.login_user import LoginUserUseCase
 from src.application.use_cases.auth.register_user import RegisterUserUseCase
+from src.application.use_cases.auth.update_profile import UpdateProfileUseCase
 from src.application.use_cases.dashboard.get_dashboard_summary import (
     GetDashboardSummaryUseCase,
 )
@@ -87,6 +89,14 @@ def get_register_use_case(db: DbSession) -> RegisterUserUseCase:
 
 def get_login_use_case(db: DbSession) -> LoginUserUseCase:
     return LoginUserUseCase(PostgresUserRepository(db), _password_hasher, _jwt_handler)
+
+
+def get_update_profile_use_case(db: DbSession) -> UpdateProfileUseCase:
+    return UpdateProfileUseCase(PostgresUserRepository(db))
+
+
+def get_change_password_use_case(db: DbSession) -> ChangePasswordUseCase:
+    return ChangePasswordUseCase(PostgresUserRepository(db), _password_hasher)
 
 
 def get_create_habit_use_case(db: DbSession) -> CreateHabitUseCase:
