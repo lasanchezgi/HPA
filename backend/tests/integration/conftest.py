@@ -4,7 +4,6 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from src.infrastructure.database.models.base import Base
 from src.infrastructure.database.models import (  # noqa: F401 — populate metadata
     catalogue_model,
     habit_log_model,
@@ -12,6 +11,7 @@ from src.infrastructure.database.models import (  # noqa: F401 — populate meta
     streak_model,
     user_model,
 )
+from src.infrastructure.database.models.base import Base
 
 
 @pytest_asyncio.fixture

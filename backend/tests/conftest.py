@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
@@ -18,7 +18,7 @@ def mock_habit_repository() -> AsyncMock:
 
 @pytest.fixture
 def sample_user() -> User:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return User(
         id=uuid4(),
         username="testuser",
@@ -37,5 +37,5 @@ def sample_habit_dto() -> CreateHabitDTO:
         habit_name="Morning Run",
         frequency_id=uuid4(),
         category_id=uuid4(),
-        habit_start_date=datetime.now(timezone.utc),
+        habit_start_date=datetime.now(UTC),
     )

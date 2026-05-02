@@ -11,5 +11,5 @@ class ArchiveHabitUseCase:
     async def execute(self, habit_id: UUID, user_id: UUID) -> None:
         habit = await self._habits.find_by_id(habit_id)
         if not habit or habit.user_id != user_id:
-            raise HabitNotFoundError(habit_id)
+            raise HabitNotFoundError(str(habit_id))
         await self._habits.soft_delete(habit_id)

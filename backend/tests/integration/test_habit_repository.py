@@ -3,16 +3,16 @@
 These tests require a running PostgreSQL instance. See tests/integration/conftest.py.
 Run with: make test-integration or set TEST_DATABASE_URL in the environment.
 """
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
 
 from src.domain.entities.habit import Habit
+from src.infrastructure.database.models.user_model import UserModel
 from src.infrastructure.database.repositories.postgres_habit_repository import (
     PostgresHabitRepository,
 )
-from src.infrastructure.database.models.user_model import UserModel
 
 
 async def _create_user(session) -> UserModel:
@@ -37,9 +37,9 @@ async def test_save_and_find_by_id(test_session):
         habit_name="Integration Test Habit",
         frequency_id=uuid4(),
         category_id=uuid4(),
-        habit_start_date=datetime.now(timezone.utc),
+        habit_start_date=datetime.now(UTC),
         is_active=True,
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
     )
     saved = await repo.save(habit)
     found = await repo.find_by_id(saved.id)
@@ -59,9 +59,9 @@ async def test_update_habit_name_persists_change(test_session):
         habit_name="Original Name",
         frequency_id=uuid4(),
         category_id=uuid4(),
-        habit_start_date=datetime.now(timezone.utc),
+        habit_start_date=datetime.now(UTC),
         is_active=True,
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
     )
     saved = await repo.save(habit)
 
@@ -92,9 +92,9 @@ async def test_soft_delete_sets_is_active_false(test_session):
         habit_name="To Be Deleted",
         frequency_id=uuid4(),
         category_id=uuid4(),
-        habit_start_date=datetime.now(timezone.utc),
+        habit_start_date=datetime.now(UTC),
         is_active=True,
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
     )
     saved = await repo.save(habit)
     await repo.soft_delete(saved.id)
@@ -115,9 +115,9 @@ async def test_find_active_by_user_id_excludes_soft_deleted(test_session):
         habit_name="Active Habit",
         frequency_id=uuid4(),
         category_id=uuid4(),
-        habit_start_date=datetime.now(timezone.utc),
+        habit_start_date=datetime.now(UTC),
         is_active=True,
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
     )
     deleted_habit = Habit(
         id=uuid4(),
@@ -125,9 +125,9 @@ async def test_find_active_by_user_id_excludes_soft_deleted(test_session):
         habit_name="Deleted Habit",
         frequency_id=uuid4(),
         category_id=uuid4(),
-        habit_start_date=datetime.now(timezone.utc),
+        habit_start_date=datetime.now(UTC),
         is_active=True,
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
     )
     await repo.save(active_habit)
     saved_deleted = await repo.save(deleted_habit)
@@ -151,9 +151,9 @@ async def test_find_all_by_user_id_returns_only_user_habits(test_session):
         habit_name="User A Habit",
         frequency_id=uuid4(),
         category_id=uuid4(),
-        habit_start_date=datetime.now(timezone.utc),
+        habit_start_date=datetime.now(UTC),
         is_active=True,
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
     )
     habit_b = Habit(
         id=uuid4(),
@@ -161,9 +161,9 @@ async def test_find_all_by_user_id_returns_only_user_habits(test_session):
         habit_name="User B Habit",
         frequency_id=uuid4(),
         category_id=uuid4(),
-        habit_start_date=datetime.now(timezone.utc),
+        habit_start_date=datetime.now(UTC),
         is_active=True,
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
     )
     await repo.save(habit_a)
     await repo.save(habit_b)

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
@@ -28,9 +28,9 @@ def habit(user_id):
         habit_name="Meditate",
         frequency_id=uuid4(),
         category_id=uuid4(),
-        habit_start_date=datetime.now(timezone.utc),
+        habit_start_date=datetime.now(UTC),
         is_active=True,
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
     )
 
 
@@ -52,7 +52,7 @@ async def test_log_completion_creates_log_and_updates_streak(habit, user_id):
         habit_id=habit.id,
         user_id=user_id,
         status=CompletionStatus.DONE,
-        logged_at=datetime.now(timezone.utc),
+        logged_at=datetime.now(UTC),
     )
     log_repo.save.return_value = saved_log
     streak_repo.find_by_habit_id.return_value = None
@@ -86,7 +86,7 @@ async def test_duplicate_log_same_day_raises_error(habit, user_id):
         habit_id=habit.id,
         user_id=user_id,
         status=CompletionStatus.DONE,
-        logged_at=datetime.now(timezone.utc),
+        logged_at=datetime.now(UTC),
     )
     log_repo.find_by_habit_and_date.return_value = existing_log
 

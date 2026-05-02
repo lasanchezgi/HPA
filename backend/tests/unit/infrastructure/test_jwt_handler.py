@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import UTC, timedelta
 
 import pytest
 
@@ -21,10 +21,11 @@ def test_create_and_decode_token_returns_correct_subject(handler):
 
 def test_expired_token_raises_exception():
     handler = JWTHandler(secret_key=SECRET, algorithm="HS256", expire_minutes=0)
-    from datetime import datetime, timezone
+    from datetime import datetime
+
     from jose import jwt as jose_jwt
 
-    expire = datetime.now(timezone.utc) + timedelta(seconds=-1)
+    expire = datetime.now(UTC) + timedelta(seconds=-1)
     token = jose_jwt.encode({"sub": "u1", "exp": expire}, SECRET, algorithm="HS256")
 
     with pytest.raises(InvalidCredentialsError):

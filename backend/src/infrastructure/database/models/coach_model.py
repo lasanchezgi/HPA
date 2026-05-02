@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
@@ -21,4 +22,4 @@ class CoachConversationModel(Base, TimestampMixin):
         unique=True,
         index=True,
     )
-    messages: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    messages: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False, default=list)

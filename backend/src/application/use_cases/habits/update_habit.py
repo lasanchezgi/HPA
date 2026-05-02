@@ -11,7 +11,7 @@ class UpdateHabitUseCase:
     async def execute(self, dto: UpdateHabitDTO) -> Habit:
         habit = await self._habit_repo.find_by_id(dto.habit_id)
         if not habit or habit.user_id != dto.user_id:
-            raise HabitNotFoundError(dto.habit_id)
+            raise HabitNotFoundError(str(dto.habit_id))
 
         updated = Habit(
             id=habit.id,

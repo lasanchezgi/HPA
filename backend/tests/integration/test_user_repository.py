@@ -1,5 +1,5 @@
 """Integration tests for PostgresUserRepository."""
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
@@ -12,7 +12,7 @@ from src.infrastructure.database.repositories.postgres_user_repository import (
 
 
 def _make_user(**overrides) -> User:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     defaults = dict(
         id=uuid4(),
         username=f"user_{uuid4().hex[:8]}",

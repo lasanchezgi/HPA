@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
@@ -17,13 +16,13 @@ def create_habit_dto():
         habit_name="Morning Run",
         frequency_id=uuid4(),
         category_id=uuid4(),
-        habit_start_date=datetime.now(timezone.utc),
+        habit_start_date=datetime.now(UTC),
     )
 
 
 @pytest.mark.asyncio
 async def test_creates_habit_and_calls_repository_save(mock_habit_repository, create_habit_dto):
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     saved_habit = Habit(
         id=uuid4(),
         user_id=create_habit_dto.user_id,
@@ -54,9 +53,9 @@ async def test_raises_duplicate_error_if_name_exists(mock_habit_repository, crea
         habit_name="Morning Run",
         frequency_id=uuid4(),
         category_id=uuid4(),
-        habit_start_date=datetime.now(timezone.utc),
+        habit_start_date=datetime.now(UTC),
         is_active=True,
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
     )
     mock_habit_repository.find_active_by_user_id.return_value = [existing]
 

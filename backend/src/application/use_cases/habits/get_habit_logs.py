@@ -18,6 +18,6 @@ class GetHabitLogsUseCase:
     async def execute(self, habit_id: UUID, user_id: UUID) -> list[HabitLogDTO]:
         habit = await self._habits.find_by_id(habit_id)
         if not habit or habit.user_id != user_id:
-            raise HabitNotFoundError(habit_id)
+            raise HabitNotFoundError(str(habit_id))
         logs = await self._logs.find_by_habit_id(habit_id)
         return [HabitLogDTO.from_entity(log) for log in logs]

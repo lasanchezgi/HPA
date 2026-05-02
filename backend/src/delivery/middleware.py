@@ -1,7 +1,10 @@
+from collections.abc import Awaitable, Callable
+
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from openai import APIError, AuthenticationError, RateLimitError
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 from src.domain.exceptions import (
     ApplicationException,
@@ -16,7 +19,7 @@ from src.domain.exceptions import (
 
 
 class ExceptionHandlerMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):  # type: ignore[override]
+    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         try:
             return await call_next(request)
         except HabitNotFoundError as exc:

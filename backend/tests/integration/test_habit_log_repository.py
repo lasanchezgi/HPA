@@ -1,5 +1,5 @@
 """Integration tests for PostgresHabitLogRepository."""
-from datetime import datetime, date, timezone
+from datetime import UTC, date, datetime
 from uuid import uuid4
 
 import pytest
@@ -22,7 +22,7 @@ async def _seed_user_and_habit(session):
     session.add(user)
     await session.flush()
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     habit = HabitModel(
         id=uuid4(),
         user_id=user.id,
@@ -43,7 +43,7 @@ def _make_log(habit_id, user_id, logged_at=None) -> HabitLog:
         habit_id=habit_id,
         user_id=user_id,
         status=CompletionStatus.DONE,
-        logged_at=logged_at or datetime.now(timezone.utc),
+        logged_at=logged_at or datetime.now(UTC),
     )
 
 
@@ -65,7 +65,7 @@ async def test_find_by_habit_and_date_returns_log_if_exists(test_session):
     user, habit = await _seed_user_and_habit(test_session)
     repo = PostgresHabitLogRepository(test_session)
 
-    today = datetime.now(timezone.utc)
+    today = datetime.now(UTC)
     log = _make_log(habit.id, user.id, logged_at=today)
     await repo.save(log)
 
@@ -88,7 +88,7 @@ async def test_duplicate_log_same_day_returns_existing(test_session):
     user, habit = await _seed_user_and_habit(test_session)
     repo = PostgresHabitLogRepository(test_session)
 
-    today = datetime.now(timezone.utc)
+    today = datetime.now(UTC)
     log = _make_log(habit.id, user.id, logged_at=today)
     await repo.save(log)
 

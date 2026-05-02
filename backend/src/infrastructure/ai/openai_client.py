@@ -1,4 +1,7 @@
+from typing import Any, cast
+
 from openai import AsyncOpenAI
+from openai.types.chat import ChatCompletionMessageParam
 
 from config import Settings
 
@@ -13,15 +16,15 @@ class OpenAICoachClient:
     async def get_completion(
         self,
         system_prompt: str,
-        messages: list[dict],
+        messages: list[dict[str, Any]],
     ) -> str:
         response = await self.client.chat.completions.create(
             model=self.model,
             max_tokens=self.max_tokens,
             temperature=self.temperature,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                *messages,
-            ],
+            messages=cast(
+                list[ChatCompletionMessageParam],
+                [{"role": "system", "content": system_prompt}, *messages],
+            ),
         )
         return response.choices[0].message.content or ""

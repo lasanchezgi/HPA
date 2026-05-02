@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
@@ -25,9 +25,9 @@ def _make_habit(user_id, name="Test Habit"):
         habit_name=name,
         frequency_id=uuid4(),
         category_id=uuid4(),
-        habit_start_date=datetime.now(timezone.utc),
+        habit_start_date=datetime.now(UTC),
         is_active=True,
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
     )
 
 
@@ -64,10 +64,10 @@ async def test_dashboard_with_habits_and_streak():
         habit_id=habit.id,
         current_streak=5,
         best_streak=10,
-        last_completed_date=datetime.now(timezone.utc).date(),
+        last_completed_date=datetime.now(UTC).date(),
     )
     streak_repo.find_by_habit_ids.return_value = {habit.id: streak}
-    log_repo.find_last_log_by_habit_ids.return_value = {habit.id: datetime.now(timezone.utc)}
+    log_repo.find_last_log_by_habit_ids.return_value = {habit.id: datetime.now(UTC)}
 
     use_case = _make_use_case(habit_repo, log_repo, streak_repo)
     result = await use_case.execute(user_id)
