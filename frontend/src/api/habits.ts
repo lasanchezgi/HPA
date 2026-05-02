@@ -1,5 +1,5 @@
 import axios from 'axios'
-import client from './client'
+import client, { extractErrorMessage } from './client'
 import type {
   Habit,
   DashboardSummary,
@@ -18,7 +18,7 @@ export async function getHabits(): Promise<Habit[]> {
     return data
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(error.response?.data?.detail ?? 'Error cargando hábitos')
+      throw new Error(extractErrorMessage(error.response?.data?.detail, 'Error cargando hábitos'))
     }
     throw error
   }
@@ -30,7 +30,7 @@ export async function getDashboard(): Promise<DashboardSummary> {
     return data
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(error.response?.data?.detail ?? 'Error cargando el dashboard')
+      throw new Error(extractErrorMessage(error.response?.data?.detail, 'Error cargando el dashboard'))
     }
     throw error
   }
@@ -44,9 +44,7 @@ export const createHabit = async (
     return data
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(
-        error.response?.data?.detail ?? 'Error creando el hábito'
-      )
+      throw new Error(extractErrorMessage(error.response?.data?.detail, 'Error creando el hábito'))
     }
     throw error
   }
@@ -58,7 +56,7 @@ export const getHabitDetail = async (habitId: string): Promise<HabitDetail> => {
     return data
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(error.response?.data?.detail ?? 'Hábito no encontrado')
+      throw new Error(extractErrorMessage(error.response?.data?.detail, 'Hábito no encontrado'))
     }
     throw error
   }
@@ -70,7 +68,7 @@ export const getHabitLogs = async (habitId: string): Promise<HabitLog[]> => {
     return data
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(error.response?.data?.detail ?? 'Error cargando historial')
+      throw new Error(extractErrorMessage(error.response?.data?.detail, 'Error cargando historial'))
     }
     throw error
   }
@@ -85,7 +83,7 @@ export const updateHabit = async (
     return data
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(error.response?.data?.detail ?? 'Error actualizando el hábito')
+      throw new Error(extractErrorMessage(error.response?.data?.detail, 'Error actualizando el hábito'))
     }
     throw error
   }
@@ -96,7 +94,7 @@ export const archiveHabit = async (habitId: string): Promise<void> => {
     await client.patch(`/habits/${habitId}/archive`)
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(error.response?.data?.detail ?? 'Error archivando el hábito')
+      throw new Error(extractErrorMessage(error.response?.data?.detail, 'Error archivando el hábito'))
     }
     throw error
   }
@@ -115,9 +113,7 @@ export const logCompletion = async (
       if (status === 409) {
         throw new Error('Ya registraste este hábito hoy')
       }
-      throw new Error(
-        error.response?.data?.detail ?? 'Error registrando el hábito'
-      )
+      throw new Error(extractErrorMessage(error.response?.data?.detail, 'Error registrando el hábito'))
     }
     throw error
   }

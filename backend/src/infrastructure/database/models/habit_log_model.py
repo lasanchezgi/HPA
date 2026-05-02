@@ -29,7 +29,8 @@ class HabitLogModel(Base):
         PG_UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     status: Mapped[CompletionStatusEnum] = mapped_column(
-        Enum(CompletionStatusEnum, name="completion_status"), nullable=False
+        Enum(CompletionStatusEnum, name="completion_status", values_callable=lambda obj: [e.value for e in obj]),
+        nullable=False,
     )
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     completion_value: Mapped[float | None] = mapped_column(Float, nullable=True)

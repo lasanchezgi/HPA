@@ -1,5 +1,5 @@
 import axios from 'axios'
-import client from './client'
+import client, { extractErrorMessage } from './client'
 import type { CoachChatResponse, CoachHistoryResponse } from '../types'
 
 export const sendCoachMessage = async (
@@ -13,7 +13,7 @@ export const sendCoachMessage = async (
       const status = error.response?.status
       if (status === 429) throw new Error('Coach ocupado. Intenta en unos segundos.')
       if (status === 503) throw new Error('Coach no disponible temporalmente.')
-      throw new Error(error.response?.data?.detail ?? 'Error al enviar mensaje.')
+      throw new Error(extractErrorMessage(error.response?.data?.detail, 'Error al enviar mensaje.'))
     }
     throw error
   }
@@ -25,7 +25,7 @@ export const getCoachHistory = async (): Promise<CoachHistoryResponse> => {
     return data
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(error.response?.data?.detail ?? 'Error cargando historial.')
+      throw new Error(extractErrorMessage(error.response?.data?.detail, 'Error cargando historial.'))
     }
     throw error
   }

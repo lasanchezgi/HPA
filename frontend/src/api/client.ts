@@ -1,5 +1,14 @@
 import axios from 'axios'
 
+type FastApiDetail = string | { msg: string }[]
+
+export function extractErrorMessage(detail: FastApiDetail | undefined, fallback: string): string {
+  if (!detail) return fallback
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) return detail.map((d) => d.msg).join(', ')
+  return fallback
+}
+
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: { 'Content-Type': 'application/json' },
