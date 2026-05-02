@@ -80,9 +80,13 @@ async def get_current_user(
 
     user = await repo.find_by_id(UUID(user_id))
     if not user or not user.is_active:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
+        )
 
-    return UserDTO(id=user.id, username=user.username, email=user.email, is_active=user.is_active)
+    return UserDTO(
+        id=user.id, username=user.username, email=user.email, is_active=user.is_active
+    )
 
 
 CurrentUser = Annotated[UserDTO, Depends(get_current_user)]

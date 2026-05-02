@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from uuid import UUID
 
-from src.domain.repositories.coach_repository import CoachRepository
-from src.domain.repositories.habit_repository import HabitRepository
 from src.application.use_cases.dashboard.get_dashboard_summary import (
     GetDashboardSummaryUseCase,
 )
-from src.infrastructure.ai.openai_client import OpenAICoachClient
+from src.domain.repositories.coach_repository import CoachRepository
+from src.domain.repositories.habit_repository import HabitRepository
 from src.infrastructure.ai.coach_prompts import build_system_prompt
+from src.infrastructure.ai.openai_client import OpenAICoachClient
 
 
 @dataclass
@@ -23,7 +23,6 @@ class ChatWithCoachResultDTO:
 
 
 class ChatWithCoachUseCase:
-
     def __init__(
         self,
         coach_repo: CoachRepository,

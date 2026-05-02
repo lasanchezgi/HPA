@@ -36,7 +36,9 @@ class ExceptionHandlerMiddleware(BaseHTTPMiddleware):
         except RateLimitError:
             return JSONResponse(
                 status_code=429,
-                content={"detail": "Coach no disponible temporalmente. Intenta en unos segundos."},
+                content={
+                    "detail": "Coach no disponible temporalmente. Intenta en unos segundos."
+                },
             )
         except AuthenticationError:
             return JSONResponse(
@@ -46,5 +48,7 @@ class ExceptionHandlerMiddleware(BaseHTTPMiddleware):
         except APIError:
             return JSONResponse(
                 status_code=502,
-                content={"detail": "Error comunicándose con el coach. Intenta de nuevo."},
+                content={
+                    "detail": "Error comunicándose con el coach. Intenta de nuevo."
+                },
             )

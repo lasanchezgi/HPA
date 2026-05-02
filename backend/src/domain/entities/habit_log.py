@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from uuid import UUID
 
 
-class CompletionStatus(str, Enum):
+class CompletionStatus(StrEnum):
     NOT_DONE = "not_done"
     PARTIAL = "partial"
     DONE = "done"

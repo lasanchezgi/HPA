@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from src.application.dtos.dashboard_dtos import (
@@ -26,7 +26,7 @@ class GetDashboardSummaryUseCase:
 
     async def execute(self, user_id: UUID) -> DashboardSummaryDTO:
         habits = await self._habits.find_active_by_user_id(user_id)
-        today = datetime.now(timezone.utc).date()
+        today = datetime.now(UTC).date()
 
         if not habits:
             return DashboardSummaryDTO(
@@ -88,4 +88,6 @@ class GetDashboardSummaryUseCase:
 
 
 def _empty_streak(habit_id: UUID) -> Streak:
-    return Streak(habit_id=habit_id, current_streak=0, best_streak=0, last_completed_date=None)
+    return Streak(
+        habit_id=habit_id, current_streak=0, best_streak=0, last_completed_date=None
+    )

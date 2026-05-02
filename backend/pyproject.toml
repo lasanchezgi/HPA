@@ -36,7 +36,11 @@ line-length = 88
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP"]
-ignore = ["N818"]  # Exception names — allow Error suffix
+ignore = [
+    "N818",   # Exception names — allow Error suffix
+    "E501",   # Line too long — SQLAlchemy column defs are legitimately verbose
+    "F821",   # Undefined name — SQLAlchemy forward refs use string literals
+]
 
 [tool.mypy]
 strict = true

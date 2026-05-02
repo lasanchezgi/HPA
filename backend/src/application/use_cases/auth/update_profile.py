@@ -14,4 +14,9 @@ class UpdateProfileUseCase:
 
         user.username = dto.username
         updated = await self._user_repo.update(user)
-        return UserDTO(id=updated.id, username=updated.username, email=updated.email, is_active=updated.is_active)
+        return UserDTO(
+            id=updated.id,
+            username=updated.username,
+            email=updated.email,
+            is_active=updated.is_active,
+        )

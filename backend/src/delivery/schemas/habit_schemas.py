@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -13,7 +13,7 @@ class CreateHabitRequest(BaseModel):
     category_code: str = Field(min_length=1, max_length=50)
     habit_type_id: UUID | None = None
     goal_target: float | None = None
-    habit_start_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    habit_start_date: datetime = Field(default_factory=lambda: datetime.now(UTC))
     habit_end_date: datetime | None = None
 
 

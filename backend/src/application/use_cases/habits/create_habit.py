@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from src.application.dtos.habit_dtos import CreateHabitDTO, HabitDTO
@@ -16,7 +16,7 @@ class CreateHabitUseCase:
         if any(h.habit_name == dto.habit_name for h in existing):
             raise DuplicateHabitError(dto.habit_name)
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         habit = Habit(
             id=uuid4(),
             user_id=dto.user_id,

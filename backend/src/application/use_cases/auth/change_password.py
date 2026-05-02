@@ -5,7 +5,9 @@ from src.infrastructure.security.password_hasher import PasswordHasher
 
 
 class ChangePasswordUseCase:
-    def __init__(self, user_repo: UserRepository, password_hasher: PasswordHasher) -> None:
+    def __init__(
+        self, user_repo: UserRepository, password_hasher: PasswordHasher
+    ) -> None:
         self._user_repo = user_repo
         self._password_hasher = password_hasher
 

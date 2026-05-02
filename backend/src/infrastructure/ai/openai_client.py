@@ -4,7 +4,6 @@ from config import Settings
 
 
 class OpenAICoachClient:
-
     def __init__(self, settings: Settings) -> None:
         self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         self.model = settings.OPENAI_MODEL

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from src.application.dtos.habit_dtos import LogCompletionDTO, LogCompletionResultDTO
@@ -26,7 +26,7 @@ class LogCompletionUseCase:
         if not habit or habit.user_id != dto.user_id:
             raise HabitNotFoundError(str(dto.habit_id))
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         existing = await self._logs.find_by_habit_and_date(dto.habit_id, now.date())
         if existing is not None:
             raise DuplicateLogError(str(dto.habit_id))

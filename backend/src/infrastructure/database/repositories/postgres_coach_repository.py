@@ -11,7 +11,6 @@ from src.infrastructure.database.models.coach_model import CoachConversationMode
 
 
 class PostgresCoachRepository(CoachRepository):
-
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 

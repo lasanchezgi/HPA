@@ -4,7 +4,11 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.application.dtos.habit_dtos import CreateHabitDTO, LogCompletionDTO, UpdateHabitDTO
+from src.application.dtos.habit_dtos import (
+    CreateHabitDTO,
+    LogCompletionDTO,
+    UpdateHabitDTO,
+)
 from src.application.use_cases.habits.archive_habit import ArchiveHabitUseCase
 from src.application.use_cases.habits.create_habit import CreateHabitUseCase
 from src.application.use_cases.habits.get_habit_logs import GetHabitLogsUseCase
@@ -50,14 +54,18 @@ async def create_habit(
 ) -> HabitResponse:
     catalogue_repo = PostgresCatalogueRepository(db)
 
-    frequency_id = await catalogue_repo.find_id_by_type_and_code("frequency", body.frequency_code)
+    frequency_id = await catalogue_repo.find_id_by_type_and_code(
+        "frequency", body.frequency_code
+    )
     if not frequency_id:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Unknown frequency_code: '{body.frequency_code}'",
         )
 
-    category_id = await catalogue_repo.find_id_by_type_and_code("category", body.category_code)
+    category_id = await catalogue_repo.find_id_by_type_and_code(
+        "category", body.category_code
+    )
     if not category_id:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -94,9 +102,15 @@ async def list_habits(
     if not habits:
         return []
     catalogue_repo = PostgresCatalogueRepository(db)
-    unique_ids = list({h.frequency_id for h in habits} | {h.category_id for h in habits})
-    codes = await asyncio.gather(*[catalogue_repo.find_code_by_id(uid) for uid in unique_ids])
-    code_map: dict[UUID, str] = {uid: code or "" for uid, code in zip(unique_ids, codes)}
+    unique_ids = list(
+        {h.frequency_id for h in habits} | {h.category_id for h in habits}
+    )
+    codes = await asyncio.gather(
+        *[catalogue_repo.find_code_by_id(uid) for uid in unique_ids]
+    )
+    code_map: dict[UUID, str] = {
+        uid: code or "" for uid, code in zip(unique_ids, codes)
+    }
     return [
         HabitResponse(
             **h.__dict__,
@@ -169,7 +183,9 @@ async def update_habit(
 
     frequency_id = None
     if body.frequency_code is not None:
-        frequency_id = await catalogue_repo.find_id_by_type_and_code("frequency", body.frequency_code)
+        frequency_id = await catalogue_repo.find_id_by_type_and_code(
+            "frequency", body.frequency_code
+        )
         if not frequency_id:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -178,7 +194,9 @@ async def update_habit(
 
     category_id = None
     if body.category_code is not None:
-        category_id = await catalogue_repo.find_id_by_type_and_code("category", body.category_code)
+        category_id = await catalogue_repo.find_id_by_type_and_code(
+            "category", body.category_code
+        )
         if not category_id:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

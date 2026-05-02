@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from src.application.use_cases.coach.chat_with_coach import ChatWithCoachDTO
 from src.delivery.dependencies import (
     CurrentUser,
     get_coach_repository,
@@ -11,7 +12,6 @@ from src.delivery.schemas.coach_schemas import (
     CoachHistoryResponse,
     CoachMessageSchema,
 )
-from src.application.use_cases.coach.chat_with_coach import ChatWithCoachDTO
 
 router = APIRouter(prefix="/coach", tags=["coach"])
 

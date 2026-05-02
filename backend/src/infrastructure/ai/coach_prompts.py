@@ -6,10 +6,12 @@ def build_system_prompt(
     dashboard: DashboardSummaryDTO,
     habits: list[Habit],
 ) -> str:
-    habits_text = "\n".join([
-        f"- {h.habit_name} ({'activo' if h.is_active else 'archivado'})"
-        for h in habits
-    ])
+    habits_text = "\n".join(
+        [
+            f"- {h.habit_name} ({'activo' if h.is_active else 'archivado'})"
+            for h in habits
+        ]
+    )
 
     return f"""Eres el coach personal de hábitos de Habit Power App.
 Tu rol es motivar, orientar y dar recomendaciones concretas y personalizadas.

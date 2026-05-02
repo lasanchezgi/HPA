@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from jose import JWTError, jwt
@@ -20,7 +20,7 @@ class JWTHandler:
     def create_access_token(
         self, subject: str, extra: dict[str, Any] | None = None
     ) -> str:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=self._expire_minutes)
+        expire = datetime.now(UTC) + timedelta(minutes=self._expire_minutes)
         payload: dict[str, Any] = {"sub": subject, "exp": expire}
         if extra:
             payload.update(extra)

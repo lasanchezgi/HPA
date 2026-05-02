@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from src.application.dtos.auth_dtos import RegisterUserDTO, UserDTO
@@ -25,7 +25,7 @@ class RegisterUserUseCase:
         if existing:
             raise UserAlreadyExistsError(dto.email)
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         user = User(
             id=uuid4(),
             username=dto.username,
