@@ -19,7 +19,9 @@ from src.domain.exceptions import (
 
 
 class ExceptionHandlerMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         try:
             return await call_next(request)
         except HabitNotFoundError as exc:

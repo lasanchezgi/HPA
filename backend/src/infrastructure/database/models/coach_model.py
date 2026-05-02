@@ -22,4 +22,6 @@ class CoachConversationModel(Base, TimestampMixin):
         unique=True,
         index=True,
     )
-    messages: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False, default=list)
+    messages: Mapped[list[dict[str, Any]]] = mapped_column(
+        JSONB, nullable=False, default=list
+    )
