@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage'
 import HabitDetailPage from './pages/HabitDetailPage'
 import HabitsPage from './pages/HabitsPage'
 import ProfilePage from './pages/ProfilePage'
+import CoachPage from './pages/CoachPage'
 
 export default function App() {
   return (
@@ -44,6 +45,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/coach"
+            element={
+              <ProtectedRoute>
+                <CoachPage />
               </ProtectedRoute>
             }
           />

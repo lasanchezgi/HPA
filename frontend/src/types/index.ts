@@ -117,3 +117,19 @@ export interface ConsistencyDataPoint {
   total: number
   rate: number
 }
+
+export interface CoachMessage {
+  role: 'user' | 'assistant'
+  content: string
+  created_at: string
+}
+
+export interface CoachChatResponse {
+  reply: string
+  conversation_id: string
+}
+
+export interface CoachHistoryResponse {
+  conversation_id: string
+  messages: CoachMessage[]
+}
