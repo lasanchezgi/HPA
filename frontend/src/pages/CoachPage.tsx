@@ -59,7 +59,7 @@ export default function CoachPage() {
       </header>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-4 pt-4" style={{ paddingBottom: '8px' }}>
+      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-32">
         {isLoading ? (
           <div className="flex flex-col gap-4 animate-pulse">
             {[false, true, false].map((isRight, i) => (
@@ -99,25 +99,24 @@ export default function CoachPage() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Error banner */}
-      {error && (
-        <div className="mx-4 mb-2 flex items-center justify-between gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-600">
-          <span>⚠️ {error}</span>
-          {canRetry && (
-            <button
-              onClick={handleRetry}
-              className="font-medium underline whitespace-nowrap"
-            >
-              Reintentar
-            </button>
-          )}
-        </div>
-      )}
+      {/* Input bar fixed above BottomNav (~60px tall) */}
+      <div className="fixed left-0 right-0 bg-white border-t border-gray-100" style={{ bottom: '60px' }}>
+        {error && (
+          <div className="mx-4 mt-2 flex items-center justify-between gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-600">
+            <span>⚠️ {error}</span>
+            {canRetry && (
+              <button
+                onClick={handleRetry}
+                className="font-medium underline whitespace-nowrap"
+              >
+                Reintentar
+              </button>
+            )}
+          </div>
+        )}
+        <ChatInput onSend={sendMessage} isDisabled={isSending || isLoading} />
+      </div>
 
-      {/* Input */}
-      <ChatInput onSend={sendMessage} isDisabled={isSending || isLoading} />
-
-      {/* Bottom navigation */}
       <BottomNav />
     </div>
   )

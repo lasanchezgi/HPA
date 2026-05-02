@@ -38,7 +38,7 @@ export default function ChatInput({ onSend, isDisabled, placeholder = 'Escribe u
   }
 
   return (
-    <div className="flex items-end gap-2 px-4 py-3 bg-white border-t border-gray-100">
+    <div className="flex items-end gap-2 px-4 py-3 bg-white">
       <textarea
         ref={textareaRef}
         value={text}
