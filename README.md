@@ -1,5 +1,8 @@
 # Habit Power App
 
+[![CI](https://github.com/lasanchezgi/HPA/actions/workflows/ci.yml/badge.svg)](https://github.com/lasanchezgi/HPA/actions/workflows/ci.yml)
+[![Coverage](https://codecov.io/gh/lasanchezgi/HPA/branch/main/graph/badge.svg)](https://codecov.io/gh/lasanchezgi/HPA)
+
 Track daily habits, build streaks, earn rewards, and predict your success.
 
 ## Architecture
