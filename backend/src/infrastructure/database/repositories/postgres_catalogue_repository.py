@@ -22,7 +22,7 @@ class PostgresCatalogueRepository:
         return result.scalar_one_or_none()
 
     async def find_code_by_id(self, catalogue_id: UUID) -> str | None:
-        stmt = select(CatalogueModel.name).where(
+        stmt = select(func.lower(CatalogueModel.name)).where(
             CatalogueModel.id == catalogue_id,
             CatalogueModel.is_active.is_(True),
         )
