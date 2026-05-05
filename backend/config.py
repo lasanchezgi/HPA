@@ -1,10 +1,26 @@
 from functools import lru_cache
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://habit_user:habit_pass@localhost:5432/habit_power"
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def normalize_database_url(cls, v: str) -> str:
+        if v.startswith("postgresql://") and "+asyncpg" not in v:
+            v = "postgresql+asyncpg://" + v[len("postgresql://"):]
+        parsed = urlparse(v)
+        if parsed.query:
+            params = {k: vals[0] for k, vals in parse_qs(parsed.query, keep_blank_values=True).items()}
+            params.pop("channel_binding", None)
+            if "sslmode" in params:
+                params["ssl"] = params.pop("sslmode")
+            v = urlunparse(parsed._replace(query=urlencode(params)))
+        return v
     TEST_DATABASE_URL: str = ""
     SECRET_KEY: str = "change-me-in-production"
     ALGORITHM: str = "HS256"
