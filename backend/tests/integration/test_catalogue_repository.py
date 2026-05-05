@@ -1,6 +1,8 @@
 """Integration tests for PostgresCatalogueRepository."""
 from uuid import uuid4
 
+from sqlalchemy import func, select
+
 from src.infrastructure.database.models.catalogue_model import CatalogueModel
 from src.infrastructure.database.repositories.postgres_catalogue_repository import (
     PostgresCatalogueRepository,
@@ -10,6 +12,18 @@ from src.infrastructure.database.repositories.postgres_catalogue_repository impo
 async def _seed_catalogue(
     session, catalogue_type: str, name: str, *, is_active: bool = True
 ) -> CatalogueModel:
+    # Return pre-existing row to avoid duplicate-key failures when the app
+    # startup seed already populated the shared test DB.
+    stmt = select(CatalogueModel).where(
+        CatalogueModel.catalogue_type == catalogue_type,
+        func.lower(CatalogueModel.name) == name.lower(),
+        CatalogueModel.is_active == is_active,
+    )
+    result = await session.execute(stmt)
+    existing = result.scalar_one_or_none()
+    if existing:
+        return existing
+
     entry = CatalogueModel(
         id=uuid4(),
         catalogue_type=catalogue_type,

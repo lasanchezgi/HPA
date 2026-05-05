@@ -1,5 +1,5 @@
-from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,42 +11,49 @@ from src.delivery.schemas.common import HealthResponse
 
 settings = get_settings()
 
+_CATALOGUE_SEED = [
+    ("category", "health", "Salud"),
+    ("category", "productivity", "Productividad"),
+    ("category", "learning", "Aprendizaje"),
+    ("frequency", "daily", "Todos los días"),
+    ("frequency", "weekly", "Una vez por semana"),
+    ("frequency", "monthly", "Una vez por mes"),
+    ("habit_type", "positive", "Hábito para adquirir"),
+    ("habit_type", "negative", "Hábito para eliminar"),
+]
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    if settings.ENVIRONMENT == "development":
-        from sqlalchemy import func, select
-        from sqlalchemy.ext.asyncio import AsyncSession
+    from sqlalchemy import func, select
+    from sqlalchemy.ext.asyncio import AsyncSession
 
-        from src.infrastructure.database.session import engine
-        from src.infrastructure.database.models.base import Base
-        import src.infrastructure.database.models.user_model  # noqa: F401
-        import src.infrastructure.database.models.habit_model  # noqa: F401
+    from src.infrastructure.database.models.catalogue_model import CatalogueModel
+    from src.infrastructure.database.session import engine
+
+    if settings.ENVIRONMENT == "development":
         import src.infrastructure.database.models.habit_log_model  # noqa: F401
+        import src.infrastructure.database.models.habit_model  # noqa: F401
         import src.infrastructure.database.models.streak_model  # noqa: F401
-        from src.infrastructure.database.models.catalogue_model import CatalogueModel  # noqa: F401
+        import src.infrastructure.database.models.user_model  # noqa: F401
+        from src.infrastructure.database.models.base import Base
 
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
-        async with AsyncSession(engine) as session:
-            count = await session.scalar(select(func.count()).select_from(CatalogueModel))
-            if count == 0:
-                seed_data = [
-                    CatalogueModel(catalogue_type="category", name="health", description="Salud"),
-                    CatalogueModel(catalogue_type="category", name="productivity", description="Productividad"),
-                    CatalogueModel(catalogue_type="category", name="learning", description="Aprendizaje"),
-                    CatalogueModel(catalogue_type="frequency", name="daily", description="Todos los días"),
-                    CatalogueModel(catalogue_type="frequency", name="weekly", description="Una vez por semana"),
-                    CatalogueModel(catalogue_type="frequency", name="monthly", description="Una vez por mes"),
-                    CatalogueModel(catalogue_type="habit_type", name="positive", description="Hábito para adquirir"),
-                    CatalogueModel(catalogue_type="habit_type", name="negative", description="Hábito para eliminar"),
-                ]
-                session.add_all(seed_data)
-                await session.commit()
-                print("✅ Catálogos sembrados correctamente")
-            else:
-                print(f"ℹ️  Catálogos ya existen ({count} registros), seed omitido")
+    async with AsyncSession(engine) as session:
+        count = await session.scalar(select(func.count()).select_from(CatalogueModel))
+        if count == 0:
+            seed_data = [
+                CatalogueModel(catalogue_type=t, name=n, description=d)
+                for t, n, d in _CATALOGUE_SEED
+            ]
+            session.add_all(seed_data)
+            await session.commit()
+            print("✅ Catálogos sembrados correctamente")
+        else:
+            print(f"ℹ️  Catálogos ya existen ({count} registros), seed omitido")
+
     yield
 
 
@@ -60,8 +67,8 @@ app = FastAPI(
 app.add_middleware(ExceptionHandlerMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.ENVIRONMENT == "development" else [],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

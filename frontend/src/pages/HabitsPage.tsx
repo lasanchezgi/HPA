@@ -10,16 +10,15 @@ import type { LogCompletionResponse } from '../types'
 const CATEGORIES = [
   { label: 'Todos', code: '' },
   { label: '💪 Salud', code: 'health' },
+  { label: '⚡ Productividad', code: 'productivity' },
   { label: '📚 Aprendizaje', code: 'learning' },
-  { label: '🧘 Mindfulness', code: 'mindfulness' },
-  { label: '🏋️ Fitness', code: 'fitness' },
 ]
 
 const FREQUENCIES = [
   { label: 'Todos', code: '' },
   { label: 'Diario', code: 'daily' },
   { label: 'Semanal', code: 'weekly' },
-  { label: 'Días hábiles', code: 'weekdays' },
+  { label: 'Mensual', code: 'monthly' },
 ]
 
 function SkeletonCard() {
