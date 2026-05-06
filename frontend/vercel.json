@@ -1,0 +1,5 @@
+{
+  "buildCommand": "echo 'pre-built by CI'",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
