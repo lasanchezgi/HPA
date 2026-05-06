@@ -9,7 +9,7 @@ Track daily habits, build streaks, earn rewards, and predict your success.
 
 Clean Architecture with strict layer separation:
 
-```
+```bash
 domain/        — pure Python dataclasses and ABCs, zero framework imports
 application/   — use cases that orchestrate domain logic
 infrastructure — SQLAlchemy models, Postgres repos, JWT/bcrypt
@@ -59,7 +59,7 @@ make migrate
 
 ## Project structure
 
-```
+```bash
 habit-power-app/
 ├── backend/
 │   ├── src/
